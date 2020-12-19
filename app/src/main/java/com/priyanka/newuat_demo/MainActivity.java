@@ -3,12 +3,14 @@ package com.priyanka.newuat_demo;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.Manifest;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.JsonReader;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ProgressBar;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
@@ -35,6 +37,7 @@ public class MainActivity extends AppCompatActivity {
     RequestQueue queue;
     SharedPrefrence prefrence;
     Intent i;
+    ProgressDialog progressBar;
 
 
 
@@ -48,7 +51,15 @@ public class MainActivity extends AppCompatActivity {
         button=findViewById(R.id.button);
         prefrence=new SharedPrefrence(getApplicationContext());
 
-        Log.e("TAG", "onCreate: prefrence"+ prefrence.getUname());
+        //progressbar
+        progressBar = new ProgressDialog(MainActivity.this);
+        progressBar.setCancelable(true);
+        progressBar.setMessage("Loading...........");
+//        progressBar.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+//        progressBar.setProgress(0);
+//        progressBar.setMax(100);
+
+//        Log.e("TAG", "onCreate: prefrence"+ prefrence.getUname());
         i=new Intent(MainActivity.this,drawer.class);
 //        startActivity(i);
         if (prefrence.getUname()!=null){
@@ -63,6 +74,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
+               //sets the maximum value 100
+                // display
+
                 name=unametxt.getText().toString();
                 pass=passwordtxt.getText().toString();
                 url=urltxt.getText().toString();
@@ -71,6 +85,13 @@ public class MainActivity extends AppCompatActivity {
                 prefrence.setURl(url);
                 Log.e("TAG", "onClick: "+url );
                 fetchlogin(name,pass,url);
+//                progressBar=new ProgressDialog(getApplicationContext());
+//                progressBar.setCancelable(true);//you can cancel it by pressing back button
+//                progressBar.setMessage("File downloading ...");
+//                progressBar.setProgressStyle(ProgressDialog.);
+//                progressBar.setProgress(0);//initially progress is 0
+//                progressBar.setMax(100);
+                progressBar.show();
             }
         });
 
