@@ -1,15 +1,13 @@
 package com.priyanka.newuat_demo;
 
-import android.app.FragmentManager;
 import android.content.Intent;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.SubMenu;
 import android.view.View;
 import android.view.Menu;
-import android.widget.Switch;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
@@ -18,14 +16,16 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.navigation.NavigationView;
+import com.google.gson.Gson;
+import com.priyanka.newuat_demo.Database.Databasehelper;
+import com.priyanka.newuat_demo.Models.MobileLayout;
+import com.priyanka.newuat_demo.Models.module_pojo;
 import com.priyanka.newuat_demo.ui.Account;
-import com.priyanka.newuat_demo.ui.home.HomeFragment;
 
 import androidx.annotation.NonNull;
 import androidx.core.view.GravityCompat;
@@ -44,7 +44,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -56,6 +55,7 @@ public class drawer extends AppCompatActivity {
     //    HashMap<Integer,String> modules;
     module_pojo modulePojo;
     ArrayList<module_pojo> modules;
+    ArrayList<MobileLayout> mobileLayoutArrayList;
     JsonObjectRequest request,mobileUrlRequest;
     Menu m;
     NavigationView navigationView;
@@ -64,6 +64,12 @@ public class drawer extends AppCompatActivity {
     SharedPrefrence prefrence;
     Toolbar toolbar;
     int timeoutMs;
+    String url;
+    Databasehelper databasehelper;
+    Gson gson;
+    String version="/api/v1/";
+    String TAG="Drawer class";
+    MobileLayout mobileLayout;
 
 
 
@@ -77,10 +83,12 @@ public class drawer extends AppCompatActivity {
         prefrence=new SharedPrefrence(getApplicationContext());
         timeoutMs=60000*3;
         setSupportActionBar(toolbar);
+        gson=new Gson();
+        url=prefrence.getURl();
+        databasehelper=new Databasehelper(getApplicationContext());
 
-        String version="/api/v1/";
-        String moduleUrl = "https://newuat.njcrm.in/api/v1/module-list";
-        String mobileLayoutURL="https://newuat.njcrm.in/api/v1/mobile-layout";
+        String moduleUrl = url+version+"module-list";
+        String mobileLayoutURL=url+version+"mobile-layout";
 
         FloatingActionButton fab = findViewById(R.id.fab);
         queue = Volley.newRequestQueue(this);
@@ -92,26 +100,12 @@ public class drawer extends AppCompatActivity {
             }
         });
         intent = getIntent();
-        String token = intent.getStringExtra("token");
+//        String token = intent.getStringExtra("token");
         String tokenpref=prefrence.getToken();
-        Log.e("TAG", "onCreate:tokenpref "+tokenpref );
-        String auth = "Bearer " + token;
-        Log.e("TAG", "onCreate: " + token);
-
-        request = (JsonObjectRequest) ReqestModule(moduleUrl, auth);
-
-        mobileUrlRequest= (JsonObjectRequest)MobileLayout(mobileLayoutURL,auth);
-
         String name=prefrence.getUname();
-
-//        R.string.nav_header_title=name;
-        mobileUrlRequest.setRetryPolicy(new DefaultRetryPolicy(
-                timeoutMs,
-                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
-                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
-
-        queue.add(request);
-        queue.add(mobileUrlRequest);
+        Log.e(TAG, "onCreate:tokenpref "+tokenpref );
+        String auth = "Bearer " + tokenpref;
+//        Log.e("TAG", "onCreate: " + token);
 
         drawer = findViewById(R.id.drawer_layout);
         navigationView = findViewById(R.id.nav_view);
@@ -125,15 +119,38 @@ public class drawer extends AppCompatActivity {
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);
         m = navigationView.getMenu();
+        if (databasehelper.getModule()==false) {
+            request = (JsonObjectRequest) ReqestModule(moduleUrl, auth);
+            queue.add(request);
+        }
+        else {
+            modules=databasehelper.getModuleData();
+            Log.e(TAG, "onCreate:modules===>"+modules.get(0));
+            createMenu(modules,m);
+        }
+
+        if (databasehelper.getMobileList()==false) {
+            mobileUrlRequest = (JsonObjectRequest) MobileLayout(mobileLayoutURL, auth);
+            queue.add(mobileUrlRequest);
+
+        }
+        else{
+            mobileLayoutArrayList=databasehelper.getMobileListData();
+
+
+        }
         Log.e("TAG", "onCreate:modules.size(): " + modules.size());
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                Log.e(TAG, "onNavigationItemSelected: "+item.getItemId() );
+//                navigationView.getMenu().getItem(item.getOrder()).setChecked(true);
                 selectDrawerItem(item);
                 return true;
             }
         });
 
+        toolbar.setNavigationIcon(R.drawable.ic_baseline_dehaze_24);
 
     }
 
@@ -144,8 +161,10 @@ public class drawer extends AppCompatActivity {
         Log.e("TAG", "selectDrawerItem: "+ item.getTitle().toString());
         switch (item.getTitle().toString()){
             default:
+//                if (item.getTitle().toString()==)
                 toolbar.setTitle(item.getTitle().toString());
-                fragment=new Account();
+
+                fragment=new Account(item.getTitle().toString());
                 loadfragment(fragment);
                 break;
     }
@@ -236,21 +255,18 @@ public class drawer extends AppCompatActivity {
                     JSONArray arrayRequest= jsonObject.getJSONArray("module_list");
 
                     for(int i=0;i<arrayRequest.length();i++){
-//                        JSONObject object=new JSONObject(String.valueOf(arrayRequest));
                         String modulename=arrayRequest.getJSONObject(i).getString("module_name");
                         String Singular= arrayRequest.getJSONObject(i).getString("module_singular");
                         String plurar= arrayRequest.getJSONObject(i).getString("module_plural");
 //                        modules.put(i,modulename);
                         modulePojo=new module_pojo(modulename,Singular,plurar);
                         modules.add(modulePojo);
-
+                        databasehelper.insertModules(modulePojo);
                         Log.e("TAG", "onResponse:modules: "+modules );
                         Log.e("TAG", "onResponse: module: "+modulename +"\n");
-
                     }
 
                     createMenu(modules,m);
-
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -280,6 +296,26 @@ public class drawer extends AppCompatActivity {
             @Override
             public void onResponse(JSONObject response) {
                 Log.e("TAG", "onResponse:MobileLayout "+response );
+                try {
+                    JSONArray array=response.getJSONArray("mobile_layout");
+                    Log.e("TAG", "onResponse:array "+array );
+                    for(int i=0;i<array.length();i++){
+                        JSONObject jsonObject=array.getJSONObject(i);
+                        Log.e("TAG", "onResponse:jsonObject "+jsonObject );
+                        String module_name =jsonObject.getString("module_name");
+                        Log.e("TAG", "onResponse:module_name "+ module_name);
+                        String module_label=jsonObject.getString("module_label");
+                        Log.e(TAG,"onResponse:module_label: "+module_label);
+                        JSONArray jsonObject3 =jsonObject.getJSONArray("fielddefs");
+                        Log.e("TAG", "onResponse:fielddefs "+jsonObject3 );
+                        JSONObject jsonArray=jsonObject.getJSONObject("layoutdefs");
+                        Log.e("TAG", "onResponse:layoutdefs "+jsonArray );
+                        mobileLayout=new MobileLayout(module_name,module_label,jsonArray.toString(),jsonObject3.toString());
+                        databasehelper.insertMobileLayout(mobileLayout);
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
 
             }
         }, new Response.ErrorListener() {
@@ -299,6 +335,10 @@ public class drawer extends AppCompatActivity {
                 return headers;
             }
         };
+        request.setRetryPolicy(new DefaultRetryPolicy(
+                timeoutMs,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
         return request;
     }
 
@@ -306,8 +346,8 @@ public class drawer extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         createMenu(modules,menu);
-        getMenuInflater().inflate(R.menu.drawer, menu);
-        menu.add(0, 0, 0, "Option1").setShortcut('3', 'c');
+//        getMenuInflater().inflate(R.menu.drawer, menu);
+//        menu.add(0, 0, 0, "Option1").setShortcut('3', 'c');
 
         return true;
     }
@@ -316,9 +356,9 @@ public class drawer extends AppCompatActivity {
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        createMenu(modules,menu);
-        getMenuInflater().inflate(R.menu.drawer, menu);
-        menu.add(0, 0, 0, "Option1").setShortcut('3', 'c');
+//        createMenu(modules,menu);
+//        getMenuInflater().inflate(R.menu.drawer, menu);
+//        menu.add(0, 0, 0, "Option1").setShortcut('3', 'c');
 //        menu.show()
         return super.onPrepareOptionsMenu(menu);
 //        return true;
@@ -327,7 +367,8 @@ public class drawer extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        Toast.makeText(this,item.getTitle(),Toast.LENGTH_LONG).show();
+//        Toast.makeText(this,"you clicked",Toast.LENGTH_LONG).show();
+        drawer.openDrawer(Gravity.LEFT);
         return super.onOptionsItemSelected(item);
     }
 

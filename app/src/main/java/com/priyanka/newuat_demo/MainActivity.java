@@ -2,25 +2,24 @@ package com.priyanka.newuat_demo;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.JsonReader;
 import android.util.Log;
+import android.util.Patterns;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ProgressBar;
 
 import com.android.volley.AuthFailureError;
+import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.JsonRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.android.material.textfield.TextInputEditText;
+import com.priyanka.newuat_demo.Database.Databasehelper;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -38,6 +37,8 @@ public class MainActivity extends AppCompatActivity {
     SharedPrefrence prefrence;
     Intent i;
     ProgressDialog progressBar;
+    Databasehelper databasehelper;
+    JsonObjectRequest objectRequest;
 
 
 
@@ -50,6 +51,7 @@ public class MainActivity extends AppCompatActivity {
         urltxt=findViewById(R.id.edittxt_url);
         button=findViewById(R.id.button);
         prefrence=new SharedPrefrence(getApplicationContext());
+        databasehelper=new Databasehelper(getApplicationContext());
 
         //progressbar
         progressBar = new ProgressDialog(MainActivity.this);
@@ -67,7 +69,6 @@ public class MainActivity extends AppCompatActivity {
             passwordtxt.setText(prefrence.getPassword());
             urltxt.setText(prefrence.getURl());
         }
-        queue= Volley.newRequestQueue(this);
 
 
         button.setOnClickListener(new View.OnClickListener() {
@@ -80,28 +81,42 @@ public class MainActivity extends AppCompatActivity {
                 name=unametxt.getText().toString();
                 pass=passwordtxt.getText().toString();
                 url=urltxt.getText().toString();
+
+                if(name.isEmpty()){
+                    unametxt.setError("Empty");
+                    unametxt.setFocusable(true);
+                }else if (pass.isEmpty()){
+                    passwordtxt.setError("Empty");
+                    passwordtxt.setFocusable(true);
+                }
+                else if (!Patterns.WEB_URL.matcher((urltxt.getText().toString())).matches()){
+                    urltxt.setError("Invalid");
+                    urltxt.setFocusable(true);
+                }else {
                 prefrence.setPassword(pass);
                 prefrence.setUname(name);
                 prefrence.setURl(url);
                 Log.e("TAG", "onClick: "+url );
-                fetchlogin(name,pass,url);
-//                progressBar=new ProgressDialog(getApplicationContext());
-//                progressBar.setCancelable(true);//you can cancel it by pressing back button
-//                progressBar.setMessage("File downloading ...");
-//                progressBar.setProgressStyle(ProgressDialog.);
-//                progressBar.setProgress(0);//initially progress is 0
-//                progressBar.setMax(100);
+                if (databasehelper.getLogin()==false) {
+                    objectRequest=fetchlogin(name, pass, url);
+                    queue = Volley.newRequestQueue(getApplicationContext());
+                    queue.add(objectRequest);
+
+                }
+                i=new Intent(MainActivity.this,drawer.class);
+                startActivity(i);
                 progressBar.show();
-            }
+            }}
         });
 
     }
 
-    private void fetchlogin(String unametxt, String pass, String url) {
+    private JsonObjectRequest fetchlogin(String unametxt, String pass, String url) {
 
         Log.e("TAG", "fetchlogin: "+url );
 
         String urlstr=url+"/api/v1/login";
+        Log.e("TAG", "fetchlogin: "+urlstr );
        JsonObjectRequest objectRequest = new JsonObjectRequest(Request.Method.POST, urlstr, null,
                new Response.Listener<JSONObject>() {
                    @Override
@@ -111,11 +126,14 @@ public class MainActivity extends AppCompatActivity {
                            JSONObject object = response.getJSONObject("data");
 
                            String a=object.getString("token");
+                           String id=object.getString("id");
                            Log.e("TAG", "onResponse: "+ a);
-                           i=new Intent(MainActivity.this,drawer.class);
                            i.putExtra("token",a);
                            startActivity(i);
                            prefrence.setToken(a);
+                           prefrence.setId(id);
+                           databasehelper.insertLogin(object.toString());
+
                        } catch (JSONException e) {
                            e.printStackTrace();
                        }
@@ -153,6 +171,10 @@ public class MainActivity extends AppCompatActivity {
 
 
         };
-        queue.add(objectRequest);
+       objectRequest.setRetryPolicy(new DefaultRetryPolicy(
+               6000*3,
+               DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+               DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+        return objectRequest;
     }
 }

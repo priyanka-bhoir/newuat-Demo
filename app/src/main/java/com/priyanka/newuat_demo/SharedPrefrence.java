@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 public class SharedPrefrence {
+    private String Id;
     private String Uname;
     private String Password;
     private String URl;
@@ -14,6 +15,14 @@ public class SharedPrefrence {
         sharedPreferences = context.getSharedPreferences("abc",Context.MODE_PRIVATE);
     }
 
+
+    public String getId(){
+        Id=sharedPreferences.getString("id","");
+        return Id;
+    }
+    public void setId(String id){
+        sharedPreferences.edit().putString("id",id).commit();
+    }
 
     public String getUname() {
         Uname=sharedPreferences.getString("uname","");
