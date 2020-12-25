@@ -4,11 +4,13 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.Patterns;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.DefaultRetryPolicy;
@@ -26,6 +28,7 @@ import org.json.JSONObject;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -33,13 +36,12 @@ public class MainActivity extends AppCompatActivity {
     TextInputEditText unametxt, passwordtxt,urltxt;
     Button button;
     String name,pass,url;
-    RequestQueue queue;
     SharedPrefrence prefrence;
     Intent i;
     ProgressDialog progressBar;
     Databasehelper databasehelper;
-    JsonObjectRequest objectRequest;
-
+    private CheckBox checkBox;
+    private SharedPreferences.Editor prefeditor;
 
 
     @Override
@@ -50,9 +52,21 @@ public class MainActivity extends AppCompatActivity {
         passwordtxt=findViewById(R.id.edittxt_pass);
         urltxt=findViewById(R.id.edittxt_url);
         button=findViewById(R.id.button);
+        checkBox=findViewById(R.id.checkBox);
+
         prefrence=new SharedPrefrence(getApplicationContext());
         databasehelper=new Databasehelper(getApplicationContext());
+        SharedPreferences loginPreferences = getSharedPreferences("loginPrefs", MODE_PRIVATE);
+//        prefeditor= (SharedPreferences.Editor) getSharedPreferences("loginPrefs",MODE_PRIVATE);
+        prefeditor = loginPreferences.edit();
 
+        boolean saveLogin = loginPreferences.getBoolean("saveLogin", false);
+        if (saveLogin) {
+            unametxt.setText(loginPreferences.getString("username", ""));
+            passwordtxt.setText(loginPreferences.getString("password", ""));
+            urltxt.setText(loginPreferences.getString("url",""));
+            checkBox.setChecked(true);
+        }
         //progressbar
         progressBar = new ProgressDialog(MainActivity.this);
         progressBar.setCancelable(true);
@@ -64,11 +78,11 @@ public class MainActivity extends AppCompatActivity {
 //        Log.e("TAG", "onCreate: prefrence"+ prefrence.getUname());
         i=new Intent(MainActivity.this,drawer.class);
 //        startActivity(i);
-        if (prefrence.getUname()!=null){
-            unametxt.setText(prefrence.getUname());
-            passwordtxt.setText(prefrence.getPassword());
-            urltxt.setText(prefrence.getURl());
-        }
+//        if (prefrence.getUname()!=null){
+//            unametxt.setText(prefrence.getUname());
+//            passwordtxt.setText(prefrence.getPassword());
+//            urltxt.setText(prefrence.getURl());
+//        }
 
 
         button.setOnClickListener(new View.OnClickListener() {
@@ -78,9 +92,9 @@ public class MainActivity extends AppCompatActivity {
                //sets the maximum value 100
                 // display
 
-                name=unametxt.getText().toString();
-                pass=passwordtxt.getText().toString();
-                url=urltxt.getText().toString();
+                name= Objects.requireNonNull(unametxt.getText()).toString();
+                pass= Objects.requireNonNull(passwordtxt.getText()).toString();
+                url= Objects.requireNonNull(urltxt.getText()).toString();
 
                 if(name.isEmpty()){
                     unametxt.setError("Empty");
@@ -93,29 +107,41 @@ public class MainActivity extends AppCompatActivity {
                     urltxt.setError("Invalid");
                     urltxt.setFocusable(true);
                 }else {
-                prefrence.setPassword(pass);
-                prefrence.setUname(name);
-                prefrence.setURl(url);
-                Log.e("TAG", "onClick: "+url );
-                if (databasehelper.getLogin()==false) {
-                    objectRequest=fetchlogin(name, pass, url);
-                    queue = Volley.newRequestQueue(getApplicationContext());
-                    queue.add(objectRequest);
+                    if (checkBox.isChecked()) {
+                        prefeditor.putBoolean("saveLogin", true);
+                        prefeditor.putString("username", name);
+                        prefeditor.putString("password", pass);
+                        prefeditor.putString("url",url);
+                        prefrence.setPassword(pass);
+                        prefrence.setUname(name);
+                        prefrence.setURl(url);
+                        prefeditor.apply();
+                    } else {
+                        prefeditor.clear();
+                        prefeditor.commit();
+                    }
 
-                }
+                Log.e("TAG", "onClick: "+url );
+//                if (databasehelper.getLogin()==false) {
+                    fetchlogin(name, pass, url);
+
+//                }
                 i=new Intent(MainActivity.this,drawer.class);
-                startActivity(i);
-                progressBar.show();
-            }}
+                    if (!MainActivity.this.isFinishing()) {
+                        progressBar.show();
+                    }
+                    startActivity(i);
+                }}
         });
 
     }
 
-    private JsonObjectRequest fetchlogin(String unametxt, String pass, String url) {
+    private void fetchlogin(String unametxt, String pass, String url) {
 
         Log.e("TAG", "fetchlogin: "+url );
 
         String urlstr=url+"/api/v1/login";
+        RequestQueue queue;
         Log.e("TAG", "fetchlogin: "+urlstr );
        JsonObjectRequest objectRequest = new JsonObjectRequest(Request.Method.POST, urlstr, null,
                new Response.Listener<JSONObject>() {
@@ -175,6 +201,7 @@ public class MainActivity extends AppCompatActivity {
                6000*3,
                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
-        return objectRequest;
+        queue = Volley.newRequestQueue(getApplicationContext());
+        queue.add(objectRequest);
     }
 }

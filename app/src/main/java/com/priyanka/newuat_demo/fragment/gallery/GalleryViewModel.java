@@ -1,4 +1,4 @@
-package com.priyanka.newuat_demo.ui.gallery;
+package com.priyanka.newuat_demo.fragment.gallery;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;

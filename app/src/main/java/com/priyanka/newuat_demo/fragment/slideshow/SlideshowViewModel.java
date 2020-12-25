@@ -1,4 +1,4 @@
-package com.priyanka.newuat_demo.ui.slideshow;
+package com.priyanka.newuat_demo.fragment.slideshow;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;

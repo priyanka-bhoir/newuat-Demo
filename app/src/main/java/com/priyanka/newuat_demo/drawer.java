@@ -1,5 +1,8 @@
 package com.priyanka.newuat_demo;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -8,7 +11,6 @@ import android.view.MenuItem;
 import android.view.SubMenu;
 import android.view.View;
 import android.view.Menu;
-import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.DefaultRetryPolicy;
@@ -25,7 +27,7 @@ import com.google.gson.Gson;
 import com.priyanka.newuat_demo.Database.Databasehelper;
 import com.priyanka.newuat_demo.Models.MobileLayout;
 import com.priyanka.newuat_demo.Models.module_pojo;
-import com.priyanka.newuat_demo.ui.Account;
+import com.priyanka.newuat_demo.fragment.Account;
 
 import androidx.annotation.NonNull;
 import androidx.core.view.GravityCompat;
@@ -70,6 +72,7 @@ public class drawer extends AppCompatActivity {
     String version="/api/v1/";
     String TAG="Drawer class";
     MobileLayout mobileLayout;
+
 
 
 
@@ -159,7 +162,26 @@ public class drawer extends AppCompatActivity {
     private void selectDrawerItem(MenuItem item) {
         Fragment fragment=null;
         Log.e("TAG", "selectDrawerItem: "+ item.getTitle().toString());
+        drawer.closeDrawer(GravityCompat.START);
         switch (item.getTitle().toString()){
+            case "Dashboard":
+                toolbar.setTitle(item.getTitle().toString());
+                break;
+            case "Sms/Call":
+                toolbar.setTitle(item.getTitle().toString());
+                break;
+            case "Global Search":
+                toolbar.setTitle(item.getTitle().toString());
+                break;
+            case "Import Contact":
+                toolbar.setTitle(item.getTitle().toString());
+                break;
+            case "Settings":
+                toolbar.setTitle(item.getTitle().toString());
+                break;
+            case "Sign Out":
+                logout();
+                break;
             default:
 //                if (item.getTitle().toString()==)
                 toolbar.setTitle(item.getTitle().toString());
@@ -170,7 +192,32 @@ public class drawer extends AppCompatActivity {
     }
 }
 
-    private void loadfragment(Fragment fragment) {
+    private void logout() {
+        prefrence.setToken(null);
+        String lurl=url+version+"/logout";
+        JsonObjectRequest request=new JsonObjectRequest(Request.Method.POST, lurl, null, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                try {
+                    String error=response.getString("error_message");
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.e(TAG, "onErrorResponse: error "+error );
+            }
+        });
+        queue.add(request);
+//        new AlertDialog(getApplicationContext())
+        Intent intent=new Intent(this,MainActivity.class);
+        this.finish();
+        startActivity(intent);
+    }
+
+    public void loadfragment(Fragment fragment) {
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.nav_view, fragment);
         transaction.commit();

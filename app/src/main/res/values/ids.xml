@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="cardView" type="id" />
+    <item name="cardlin" type="id" />
+    <item name="linear_left" type="id" />
+</resources>

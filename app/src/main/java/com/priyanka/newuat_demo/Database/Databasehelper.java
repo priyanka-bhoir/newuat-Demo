@@ -18,7 +18,7 @@ import java.util.ArrayList;
 public class Databasehelper extends SQLiteOpenHelper {
 
     public static final String Database_name="newuat";
-    public static final int version = 7;
+    public static final int version = 8;
     public static final String Table_LOGIN="login";
     public static final String Table_MODULE_LIST="modules";
     public static final String Table_MOBILE_LAYOUT="mobile";
@@ -65,7 +65,7 @@ public class Databasehelper extends SQLiteOpenHelper {
         db.execSQL("create table "+ Table_MOBILE_LAYOUT+"("+ID+" integer primary key, "+MODULE_NAME+" text, "+MODULE_LABEL+" text,"+LAYOUT_DEFS+" text,"+FIELDDEFS+" text)");
 
         //for getEntry
-        db.execSQL("create table "+Table_GETENTRY_LIST+"("+ID+" integer primary key,"+ENTRY_DATA+" text,"+ENTRY_LINK+" text,"+ENTRY_META+" text)");
+        db.execSQL("create table "+Table_GETENTRY_LIST+"("+ID+" integer primary key,"+MODULENAME+" text, "+ENTRY_DATA+" text,"+ENTRY_LINK+" text,"+ENTRY_META+" text)");
 
     }
 
@@ -137,14 +137,26 @@ public class Databasehelper extends SQLiteOpenHelper {
        return getValidation(Table_LOGIN);
     }
 
+//    public boolean setLogin(){
+//    }
+
     public boolean getModule() { return getValidation(Table_MODULE_LIST); }
 
     public  boolean getMobileList() {
       return getValidation(Table_MOBILE_LAYOUT);
     }
 
-    public boolean getEntryList(){
-        return getValidation(Table_GETENTRY_LIST);
+    public boolean getEntryList(String mParam1){
+        SQLiteDatabase db=this.getReadableDatabase();
+        String selection=MODULENAME+"=?";
+        Cursor cursor=db.query(Table_GETENTRY_LIST,new String[]{MODULENAME},selection,new String[]{mParam1},null,null,null);
+        if (cursor.getCount()>0){
+            Log.e(TAG, "getEntryList:  returns true");
+            return true;
+
+        }
+        Log.e(TAG, "getEntryList:  returns false");
+        return false;
     }
 
     public ArrayList<module_pojo> getModuleData() {
@@ -212,9 +224,28 @@ public class Databasehelper extends SQLiteOpenHelper {
     }
 
     public String getlayoutdefs(String modulename) {
+        String abc="";
         SQLiteDatabase db=getReadableDatabase();
-        Cursor cursor=db.query(Table_MOBILE_LAYOUT, new String[]{LAYOUT_DEFS}, MODULE_LABEL, new String[]{modulename},null,null,null);
-        Log.e(TAG, "getlayoutdefs:cursor "+cursor );
-        return "abc";
+        String selection=MODULE_LABEL+"=?";
+        Cursor cursor=db.query(Table_MOBILE_LAYOUT, new String[]{LAYOUT_DEFS}, selection, new String[]{modulename},null,null,null);
+        if (cursor!=null){
+            cursor.moveToFirst();
+            abc=cursor.getString(0);
+            Log.e(TAG, "getlayoutdefs:cursor "+cursor.getString(0));
+        }
+        return abc;
+    }
+
+    public String getBackendname(String mParam1) {
+        String string = null;
+        SQLiteDatabase db=getReadableDatabase();
+        String selection=MODULEPLURAL+"=?";
+        Cursor cursor=db.query(Table_MODULE_LIST,new String[]{MODULENAME},selection,new String[]{mParam1},null,null,null);
+        if (cursor!=null){
+            cursor.moveToFirst();
+            string=cursor.getString(0);
+            Log.e(TAG,"getBackendname:"+string);
+        }
+        return string;
     }
 }

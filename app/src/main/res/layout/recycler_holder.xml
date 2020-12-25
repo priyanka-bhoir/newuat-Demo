@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/cardView"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="10dp"
+    android:clickable="true"
+    android:focusable="true"
+    android:padding="10dp"
+    android:foreground="?android:attr/selectableItemBackground"
+    app:cardCornerRadius="10dp"
+    app:cardElevation="10dp">
+
+    <!-- <RelativeLayout
+         android:layout_width="match_parent"
+         android:layout_height="match_parent">
+
+         <View
+             android:layout_width="0.5dp"
+             android:layout_height="240dp"
+             android:layout_alignParentEnd="true"
+             android:layout_gravity="left"
+             android:layout_marginRight="50dp"
+             android:background="@color/black" />
+
+     </RelativeLayout>-->
+
+    <LinearLayout
+        android:id="@+id/cardlin"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="10dp">
+
+                <TextView
+                    android:id="@+id/text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentTop="true"
+                    android:text="Title"
+
+                    android:textSize="15sp"
+                    />
+
+                <TextView
+                    android:id="@+id/text2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentTop="false"
+                    android:text="Title"
+                    android:textSize="15sp" />
+                <TextView
+                    android:id="@+id/text3"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="tokio"
+                    android:textSize="15sp"/>
+                <TextView
+                    android:id="@+id/text4"
+                    android:textSize="15sp"
+                    android:text="station"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+                <TextView
+                    android:id="@+id/text5"
+                    android:textSize="15sp"
+                    android:text="date"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+<!--                <TextView-->
+        <!--            android:id="@+id/time"-->
+        <!--            android:textSize="30sp"-->
+        <!--            android:text="time"-->
+        <!--            android:layout_width="wrap_content"-->
+        <!--            android:layout_height="wrap_content"/>-->
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/linear_left"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="right"
+        android:orientation="vertical">
+        <!--        <ImageView-->
+        <!--            android:layout_width="wrap_content"-->
+        <!--            android:layout_height="wrap_content"-->
+        <!--            android:id="@+id/callic"-->
+        <!--            android:src="@android:drawable/ic_menu_call"-->
+        <!--            android:onClick="Call"-->
+        <!--            android:layout_margin="10dp"-->
+        <!--            />-->
+        <!--        <ImageView-->
+        <!--            android:layout_width="wrap_content"-->
+        <!--            android:layout_height="wrap_content"-->
+        <!--            android:id="@+id/emailic"-->
+        <!--            android:src="@android:drawable/ic_dialog_email"-->
+        <!--            android:layout_margin="10dp"-->
+        <!--            />-->
+        <!--        <ImageView-->
+        <!--            android:layout_width="25dp"-->
+        <!--            android:layout_height="25dp"-->
+        <!--            android:id="@+id/wp"-->
+        <!--            android:src="@drawable/whatsapp"-->
+        <!--            android:layout_margin="10dp"-->
+        <!--            />-->
+        <!--        <ImageView-->
+        <!--            android:layout_width="wrap_content"-->
+        <!--            android:layout_height="wrap_content"-->
+        <!--            android:id="@+id/smsic"-->
+        <!--            android:src="@drawable/ic_baseline_sms_24"-->
+        <!--            android:layout_margin="10dp"-->
+        <!--            />-->
+        <!--        <ImageView-->
+        <!--            android:layout_width="wrap_content"-->
+        <!--            android:layout_height="wrap_content"-->
+        <!--            android:id="@+id/editic"-->
+        <!--            android:src="@drawable/ic_baseline_edit_24"-->
+        <!--            android:layout_margin="10dp"-->
+        <!--            />-->
+        <!--        <ImageView-->
+        <!--            android:layout_width="wrap_content"-->
+        <!--            android:layout_height="wrap_content"-->
+        <!--            android:id="@+id/webic"-->
+        <!--            android:src="@drawable/ic_baseline_web_24"-->
+        <!--            android:layout_margin="10dp"-->
+        <!--            />-->
+        <!--        <ImageView-->
+        <!--            android:layout_width="wrap_content"-->
+        <!--            android:layout_height="wrap_content"-->
+        <!--            android:id="@+id/delete"-->
+        <!--            android:src="@drawable/ic_baseline_delete_24"-->
+        <!--            android:layout_margin="10dp"-->
+        <!--            />-->
+
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>
