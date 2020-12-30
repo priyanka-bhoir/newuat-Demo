@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:id="@+id/account_frag"
-    tools:context=".fragment.Account">
+    tools:context=".fragment.AccountFragment">
 
     <!-- TODO: Update blank fragment layout -->
 

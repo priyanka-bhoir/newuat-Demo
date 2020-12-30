@@ -3,4 +3,11 @@
     <item name="cardView" type="id" />
     <item name="cardlin" type="id" />
     <item name="linear_left" type="id" />
+    <item name="callic" type="id" />
+    <item name="emailic" type="id" />
+    <item name="wp" type="id" />
+    <item name="smsic" type="id" />
+    <item name="editic" type="id" />
+    <item name="webic" type="id" />
+    <item name="delete" type="id" />
 </resources>

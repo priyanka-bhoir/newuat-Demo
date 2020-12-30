@@ -1,8 +1,5 @@
 package com.priyanka.newuat_demo;
 
-import android.app.AlertDialog;
-import android.app.Dialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -27,7 +24,7 @@ import com.google.gson.Gson;
 import com.priyanka.newuat_demo.Database.Databasehelper;
 import com.priyanka.newuat_demo.Models.MobileLayout;
 import com.priyanka.newuat_demo.Models.module_pojo;
-import com.priyanka.newuat_demo.fragment.Account;
+import com.priyanka.newuat_demo.fragment.AccountFragment;
 
 import androidx.annotation.NonNull;
 import androidx.core.view.GravityCompat;
@@ -88,6 +85,7 @@ public class drawer extends AppCompatActivity {
         setSupportActionBar(toolbar);
         gson=new Gson();
         url=prefrence.getURl();
+        Log.e(TAG, "onCreate: "+url);
         databasehelper=new Databasehelper(getApplicationContext());
 
         String moduleUrl = url+version+"module-list";
@@ -108,7 +106,6 @@ public class drawer extends AppCompatActivity {
         String name=prefrence.getUname();
         Log.e(TAG, "onCreate:tokenpref "+tokenpref );
         String auth = "Bearer " + tokenpref;
-//        Log.e("TAG", "onCreate: " + token);
 
         drawer = findViewById(R.id.drawer_layout);
         navigationView = findViewById(R.id.nav_view);
@@ -143,14 +140,10 @@ public class drawer extends AppCompatActivity {
 
         }
         Log.e("TAG", "onCreate:modules.size(): " + modules.size());
-        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
-            @Override
-            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                Log.e(TAG, "onNavigationItemSelected: "+item.getItemId() );
-//                navigationView.getMenu().getItem(item.getOrder()).setChecked(true);
-                selectDrawerItem(item);
-                return true;
-            }
+        navigationView.setNavigationItemSelectedListener(item -> {
+            Log.e(TAG, "onNavigationItemSelected: "+item.getItemId() );
+            selectDrawerItem(item);
+            return true;
         });
 
         toolbar.setNavigationIcon(R.drawable.ic_baseline_dehaze_24);
@@ -186,7 +179,7 @@ public class drawer extends AppCompatActivity {
 //                if (item.getTitle().toString()==)
                 toolbar.setTitle(item.getTitle().toString());
 
-                fragment=new Account(item.getTitle().toString());
+                fragment=new AccountFragment(item.getTitle().toString());
                 loadfragment(fragment);
                 break;
     }
@@ -211,7 +204,6 @@ public class drawer extends AppCompatActivity {
             }
         });
         queue.add(request);
-//        new AlertDialog(getApplicationContext())
         Intent intent=new Intent(this,MainActivity.class);
         this.finish();
         startActivity(intent);

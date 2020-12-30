@@ -248,4 +248,16 @@ public class Databasehelper extends SQLiteOpenHelper {
         }
         return string;
     }
+    public String getdisplaylabel(String name){
+        String display_label="";
+        SQLiteDatabase db=getReadableDatabase();
+        String selection=MODULE_LABEL+"=?";
+        Cursor cursor=db.query(Table_MOBILE_LAYOUT,new String[]{FIELDDEFS},selection,new String[]{name},null,null,null);
+        if (cursor!=null){
+            cursor.moveToFirst();
+            display_label=cursor.getString(0);
+            Log.e(TAG, "getdisplaylabel: "+display_label );
+        }
+        return display_label;
+    }
 }

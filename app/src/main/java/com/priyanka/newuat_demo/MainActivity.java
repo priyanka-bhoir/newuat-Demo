@@ -77,13 +77,6 @@ public class MainActivity extends AppCompatActivity {
 
 //        Log.e("TAG", "onCreate: prefrence"+ prefrence.getUname());
         i=new Intent(MainActivity.this,drawer.class);
-//        startActivity(i);
-//        if (prefrence.getUname()!=null){
-//            unametxt.setText(prefrence.getUname());
-//            passwordtxt.setText(prefrence.getPassword());
-//            urltxt.setText(prefrence.getURl());
-//        }
-
 
         button.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -92,9 +85,9 @@ public class MainActivity extends AppCompatActivity {
                //sets the maximum value 100
                 // display
 
-                name= Objects.requireNonNull(unametxt.getText()).toString();
-                pass= Objects.requireNonNull(passwordtxt.getText()).toString();
-                url= Objects.requireNonNull(urltxt.getText()).toString();
+                name= unametxt.getText().toString();
+                pass= passwordtxt.getText().toString();
+                url= urltxt.getText().toString();
 
                 if(name.isEmpty()){
                     unametxt.setError("Empty");
@@ -121,7 +114,7 @@ public class MainActivity extends AppCompatActivity {
                         prefeditor.commit();
                     }
 
-                Log.e("TAG", "onClick: "+url );
+                Log.e("TAG", "onClick: in "+url );
 //                if (databasehelper.getLogin()==false) {
                     fetchlogin(name, pass, url);
 
@@ -144,32 +137,23 @@ public class MainActivity extends AppCompatActivity {
         RequestQueue queue;
         Log.e("TAG", "fetchlogin: "+urlstr );
        JsonObjectRequest objectRequest = new JsonObjectRequest(Request.Method.POST, urlstr, null,
-               new Response.Listener<JSONObject>() {
-                   @Override
-                   public void onResponse(JSONObject response) {
+               response -> {
+                    try {
+                       JSONObject object = response.getJSONObject("data");
 
-                       try {
-                           JSONObject object = response.getJSONObject("data");
+                       String a=object.getString("token");
+                       String id=object.getString("id");
+                       Log.e("TAG", "onResponse: "+ a);
+                       i.putExtra("token",a);
+                       startActivity(i);
+                       prefrence.setToken(a);
+                       prefrence.setId(id);
+                       databasehelper.insertLogin(object.toString());
 
-                           String a=object.getString("token");
-                           String id=object.getString("id");
-                           Log.e("TAG", "onResponse: "+ a);
-                           i.putExtra("token",a);
-                           startActivity(i);
-                           prefrence.setToken(a);
-                           prefrence.setId(id);
-                           databasehelper.insertLogin(object.toString());
-
-                       } catch (JSONException e) {
-                           e.printStackTrace();
-                       }
+                   } catch (JSONException e) {
+                       e.printStackTrace();
                    }
-               }, new Response.ErrorListener() {
-           @Override
-           public void onErrorResponse(VolleyError error) {
-               Log.e("TAG", "onErrorResponse: "+error );
-           }
-       }) {
+               }, error -> Log.e("TAG", "onErrorResponse: "+error )) {
 
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
