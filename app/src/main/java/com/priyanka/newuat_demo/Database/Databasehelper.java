@@ -79,6 +79,8 @@ public class Databasehelper extends SQLiteOpenHelper {
     }
 
     public void insertLogin(String data){
+
+        // for inserting login api data
         ContentValues values=new ContentValues();
         values.put(LOGIN_JSON,data);
         SQLiteDatabase db=getWritableDatabase();
@@ -87,6 +89,8 @@ public class Databasehelper extends SQLiteOpenHelper {
     }
 
     public void insertModules(module_pojo data){
+
+        //for inserting modules list api data
         ContentValues values=new ContentValues();
         Log.e(TAG, "insertModules:Name "+data.getName() );
         values.put(MODULENAME,data.getName());
@@ -98,6 +102,8 @@ public class Databasehelper extends SQLiteOpenHelper {
     }
 
     public void insertMobileLayout(MobileLayout mobileLayout1){
+
+        //for inserting mobilelayout api data
         ContentValues values=new ContentValues();
         values.put(MODULE_NAME,mobileLayout1.getModulename());
         values.put(MODULE_LABEL,mobileLayout1.getModulelabel());
@@ -120,6 +126,8 @@ public class Databasehelper extends SQLiteOpenHelper {
     }
 
     public boolean getValidation(String Table_name){
+
+        //validation function
         SQLiteDatabase db=this.getReadableDatabase();
         Cursor cursor=db.rawQuery("Select * from "+Table_name,null);
         Log.e(TAG, "(getValidation):cursor.getCount() "+cursor.getCount() );
@@ -160,6 +168,8 @@ public class Databasehelper extends SQLiteOpenHelper {
     }
 
     public ArrayList<module_pojo> getModuleData() {
+
+        //fetching data from module list tabl
         String query="select * FROM "+Table_MODULE_LIST;
         SQLiteDatabase db=this.getWritableDatabase();
         ArrayList<module_pojo> storeData= new ArrayList<>();
@@ -223,6 +233,31 @@ public class Databasehelper extends SQLiteOpenHelper {
         return storeData;
     }
 
+    public String getBackendname(String mParam1) {
+        String string = null;
+        SQLiteDatabase db=getReadableDatabase();
+        String selection=MODULEPLURAL+"=?";
+        Cursor cursor=db.query(Table_MODULE_LIST,new String[]{MODULENAME},selection,new String[]{mParam1},null,null,null);
+        if (cursor!=null){
+            cursor.moveToFirst();
+            string=cursor.getString(0);
+            Log.e(TAG,"getBackendname:"+string);
+        }
+        return string;
+    }
+
+    public String getdisplaylabel(String name){
+        String display_label="";
+        SQLiteDatabase db=getReadableDatabase();
+        String selection=MODULE_LABEL+"=?";
+        Cursor cursor=db.query(Table_MOBILE_LAYOUT,new String[]{FIELDDEFS},selection,new String[]{name},null,null,null);
+        if (cursor!=null){
+            cursor.moveToFirst();
+            display_label=cursor.getString(0);
+            Log.e(TAG, "getdisplaylabel: "+display_label );
+        }
+        return display_label;
+    }
     public String getlayoutdefs(String modulename) {
         String abc="";
         SQLiteDatabase db=getReadableDatabase();
@@ -236,28 +271,4 @@ public class Databasehelper extends SQLiteOpenHelper {
         return abc;
     }
 
-    public String getBackendname(String mParam1) {
-        String string = null;
-        SQLiteDatabase db=getReadableDatabase();
-        String selection=MODULEPLURAL+"=?";
-        Cursor cursor=db.query(Table_MODULE_LIST,new String[]{MODULENAME},selection,new String[]{mParam1},null,null,null);
-        if (cursor!=null){
-            cursor.moveToFirst();
-            string=cursor.getString(0);
-            Log.e(TAG,"getBackendname:"+string);
-        }
-        return string;
-    }
-    public String getdisplaylabel(String name){
-        String display_label="";
-        SQLiteDatabase db=getReadableDatabase();
-        String selection=MODULE_LABEL+"=?";
-        Cursor cursor=db.query(Table_MOBILE_LAYOUT,new String[]{FIELDDEFS},selection,new String[]{name},null,null,null);
-        if (cursor!=null){
-            cursor.moveToFirst();
-            display_label=cursor.getString(0);
-            Log.e(TAG, "getdisplaylabel: "+display_label );
-        }
-        return display_label;
-    }
 }

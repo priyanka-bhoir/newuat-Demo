@@ -234,6 +234,7 @@ public class AccountFragment extends Fragment {
                 headers.put("Content-Type", "application/json");
                 headers.put("Accept", "application/json");
                 headers.put("Authorization", auth);
+                Log.e("parthi","header---->"+headers);
                 return headers;
             }
 
@@ -267,6 +268,8 @@ public class AccountFragment extends Fragment {
                 1000 * 100,
                 DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        Log.e("parthi","------objectRequest------>"+objectRequest);
         return objectRequest;
     }
 
@@ -310,7 +313,7 @@ public class AccountFragment extends Fragment {
 //        dialog.show();
         request = (JsonObjectRequest) ReqestModule(moduleUrl + "1", auth);
         queue.add(request);
-        dialog.dismiss();
+//        dialog.dismiss();
 
 
         Log.e(TAG, "onCreateView:getSelectedItemPosition " + recyclerView.getSelectedItemPosition());

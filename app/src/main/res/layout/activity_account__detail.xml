@@ -11,12 +11,12 @@
         android:orientation="vertical"
         android:id="@+id/accountdeatil_card_liner"
         android:outlineAmbientShadowColor="@android:color/holo_orange_light">
-        <FrameLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_marginBottom="100dp"
-            >
+<!--        <FrameLayout-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_gravity="center"-->
+<!--            android:layout_marginBottom="100dp"-->
+<!--            >-->
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -24,7 +24,7 @@
                 android:foregroundGravity="center"
                 android:layout_gravity="center"
                 android:src="@drawable/img"/>
-        </FrameLayout>
+<!--        </FrameLayout>-->
         <androidx.cardview.widget.CardView
         android:id="@+id/card"
         android:layout_height="wrap_content"
@@ -151,14 +151,18 @@
         <com.google.android.material.tabs.TabItem
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="DETAILS"
-            />
+            android:text="DETAILS"/>
 
         <com.google.android.material.tabs.TabItem
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="RELATED"
-            />
+            android:text="RELATED" />
+
     </com.google.android.material.tabs.TabLayout>
+    <androidx.viewpager.widget.ViewPager
+        android:id="@+id/viewpager"
+        android:layout_below="@id/tab"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
 
 </RelativeLayout>

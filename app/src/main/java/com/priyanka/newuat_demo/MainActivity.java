@@ -54,6 +54,8 @@ public class MainActivity extends AppCompatActivity {
         button=findViewById(R.id.button);
         checkBox=findViewById(R.id.checkBox);
 
+        startActivity(new Intent(this,drawer.class));
+
         prefrence=new SharedPrefrence(getApplicationContext());
         databasehelper=new Databasehelper(getApplicationContext());
         SharedPreferences loginPreferences = getSharedPreferences("loginPrefs", MODE_PRIVATE);

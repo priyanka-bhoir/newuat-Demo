@@ -1,5 +1,6 @@
 package com.priyanka.newuat_demo;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -178,9 +179,13 @@ public class drawer extends AppCompatActivity {
             default:
 //                if (item.getTitle().toString()==)
                 toolbar.setTitle(item.getTitle().toString());
-
+                ProgressDialog dialog = new ProgressDialog(this);
+                dialog.setCancelable(true);
+                dialog.setMessage("Loading...........");
+                dialog.show();
                 fragment=new AccountFragment(item.getTitle().toString());
                 loadfragment(fragment);
+                dialog.dismiss();
                 break;
     }
 }
