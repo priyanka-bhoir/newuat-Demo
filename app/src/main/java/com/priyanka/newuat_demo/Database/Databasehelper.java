@@ -247,6 +247,7 @@ public class Databasehelper extends SQLiteOpenHelper {
     }
 
     public String getdisplaylabel(String name){
+        //these will fetch Display label from mobile layout
         String display_label="";
         SQLiteDatabase db=getReadableDatabase();
         String selection=MODULE_LABEL+"=?";
@@ -258,17 +259,25 @@ public class Databasehelper extends SQLiteOpenHelper {
         }
         return display_label;
     }
-    public String getlayoutdefs(String modulename) {
+    public String getdefs(String module,String field){
         String abc="";
         SQLiteDatabase db=getReadableDatabase();
         String selection=MODULE_LABEL+"=?";
-        Cursor cursor=db.query(Table_MOBILE_LAYOUT, new String[]{LAYOUT_DEFS}, selection, new String[]{modulename},null,null,null);
+        Cursor cursor=db.query(Table_MOBILE_LAYOUT, new String[]{field}, selection, new String[]{module},null,null,null);
         if (cursor!=null){
             cursor.moveToFirst();
             abc=cursor.getString(0);
-            Log.e(TAG, "getlayoutdefs:cursor "+cursor.getString(0));
+//            Log.e(TAG, "getlayoutdefs:cursor "+cursor.getString(0));
         }
         return abc;
+    }
+    public String getlayoutdefs(String modulename) {
+        //these will fetch layoutdefs from mobile layout
+       return getdefs(modulename,LAYOUT_DEFS);
+    }
+    public String getFielddefs(String modulename){
+        //these will fetch fielddefs from mobile layout
+        return getdefs(modulename,FIELDDEFS);
     }
 
 }

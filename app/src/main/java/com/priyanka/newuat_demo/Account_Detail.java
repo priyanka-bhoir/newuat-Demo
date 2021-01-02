@@ -64,6 +64,7 @@ public class Account_Detail extends AppCompatActivity {
     ImageView imageView;
     ListView listView;
     Detailsadapter adapter;
+    Details_frag.NameValue nameValue;
 //    Context context;
 
 //    private FragmentStateAdapter createCardAdapter() {

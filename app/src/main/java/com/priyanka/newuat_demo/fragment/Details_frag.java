@@ -5,6 +5,7 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
 
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -69,6 +70,11 @@ public class Details_frag extends Fragment {
     RequestQueue queue;
     HashMap hashMap;
 
+
+    public interface NameValue{
+        //void getname(String name);
+    }
+
     public Details_frag(String id, String module) {
         this.id=id;
         this.module=module;
@@ -123,6 +129,8 @@ public class Details_frag extends Fragment {
         view= inflater.inflate(R.layout.fragment_details_frag, container, false);
         detailtabrequest(url+variables.version+variables.URL_DETAIL);
         listView=view.findViewById(R.id.list);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(context);
+        
         return view;
         // Inflate the layout for this fragment
 
@@ -186,10 +194,10 @@ public class Details_frag extends Fragment {
             Collection<String> value=  hashMap.values();
             ArrayList<String> listOfValues = new ArrayList<String>(value);
 
-            adapter=new Detailsadapter(context,10, listOfKeys,listOfValues);
+            adapter=new Detailsadapter(module,context,10, listOfKeys,listOfValues);
 //                listView.setVisibility(View.VISIBLE);
                 listView.setAdapter(adapter);
-                Log.e(TAG, "onCreateView:size of list " + map.size());
+                Log.e(TAG, "onCreateView:size of list " + listOfKeys.size()+"values size>>"+listOfValues.size());
 //            }
         }, error -> {
             Log.e(TAG, "detailtabrequest:error " + error);

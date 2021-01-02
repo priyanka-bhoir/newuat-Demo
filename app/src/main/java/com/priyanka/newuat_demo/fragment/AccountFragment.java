@@ -281,7 +281,7 @@ public class AccountFragment extends Fragment {
         try {
             object = new JSONObject(s);
             jsonArray = object.getJSONArray("list");
-            Log.e("TAG", "selectedfield: from database " + jsonArray);
+//            Log.e("TAG", "selectedfield: from database " + jsonArray);
         } catch (JSONException e) {
             e.printStackTrace();
         }
