@@ -7,13 +7,11 @@ import android.app.AlertDialog;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
-import android.net.http.SslCertificate;
 import android.provider.Settings;
 import android.telephony.SmsManager;
 import android.text.Editable;
@@ -32,13 +30,10 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.cardview.widget.CardView;
 import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
-import com.google.gson.JsonObject;
-import com.priyanka.newuat_demo.Account_Detail;
+import com.priyanka.newuat_demo.Detail;
 import com.priyanka.newuat_demo.Database.Databasehelper;
 import com.priyanka.newuat_demo.R;
 import com.priyanka.newuat_demo.fragment.AccountFragment;
@@ -52,9 +47,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import javax.xml.namespace.QName;
-
-import static android.content.ContentValues.TAG;
 import static androidx.core.app.ActivityCompat.requestPermissions;
 import static androidx.core.app.ActivityCompat.shouldShowRequestPermissionRationale;
 import static androidx.core.content.ContextCompat.checkSelfPermission;
@@ -73,6 +65,12 @@ public class Adapter extends ArrayAdapter<HashMap<String, String>> implements Ac
     String mParam1;
     String name,id;
     String displaytext1, displaytext2, displaytext3, displaytext4, displaytext5;
+
+    public Adapter(@NonNull Context context,int e){
+        super(context,e);
+        this.context=context;
+
+    }
 
     public Adapter(@NonNull Context context, int resource, ArrayList<HashMap<String, String>> map, String s, Activity activity) {
         super(context, resource);
@@ -230,7 +228,7 @@ public class Adapter extends ArrayAdapter<HashMap<String, String>> implements Ac
             public void onClick(View v) {
                 Log.e(TAG, "onClick: hey you clicked card view " );
                 Log.e(TAG, "onClick: id"+id );
-                Intent i =new Intent(activity, Account_Detail.class);
+                Intent i =new Intent(activity, Detail.class);
                 i.putExtra("id",id);
                 i.putExtra("module_name",mParam1);
                 context.startActivity(i);
