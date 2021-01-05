@@ -34,6 +34,7 @@ import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -85,7 +86,6 @@ public class AccountFragment extends Fragment {
     Adapter adapter;
     ArrayList<HashMap<String, String>> map;
     View view;
-    ProgressDialog dialog;
     drawer draw;
     Fragment fragment = null;
     ImageView imageView;
@@ -98,6 +98,7 @@ public class AccountFragment extends Fragment {
     String to;
     SwipeRefreshLayout swipeRefreshLayout;
     TextView textView;
+    ProgressBar progressDialog;
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
@@ -140,12 +141,6 @@ public class AccountFragment extends Fragment {
 
         databasehelper.getMobileListData();
 
-        dialog = new ProgressDialog(getContext());
-        dialog.setCancelable(true);
-        dialog.setMessage("Loading...........");
-        dialog.show();
-
-//        swipeRefreshLayout.setRefreshing(false);
         mParam2 = databasehelper.getBackendname(mParam1);
 
     }
@@ -153,7 +148,7 @@ public class AccountFragment extends Fragment {
     private Object ReqestModule(String moduleUrl, String auth) {
 
         Log.e(TAG, "ReqestModule:moduleUrl: " + moduleUrl);
-        dialog.show();
+        progressDialog.setVisibility(View.VISIBLE);
         JsonObjectRequest objectRequest = new JsonObjectRequest(Request.Method.POST, moduleUrl, null, new Response.Listener<JSONObject>() {
             private String TAG = "fragment";
             JSONArray jsonArray;
@@ -210,10 +205,8 @@ public class AccountFragment extends Fragment {
                 if (s != null) {
                     Toast.makeText(context, "no data found", Toast.LENGTH_SHORT).show();
                     Log.e(TAG, "onResponse: " + s);
-//                    ListView listView=view.findViewById(R.id.recyclerview);
                     recyclerView.setVisibility(View.INVISIBLE);
                     imageView.setVisibility(View.VISIBLE);
-//                    dialog.dismiss();
                 } else if (jsonArray.length() > 0) {
                     Log.e(TAG, "onResponse: to==> " + to);
                     adapter = new Adapter(context, 20, map, mParam1, getActivity());
@@ -221,7 +214,7 @@ public class AccountFragment extends Fragment {
                     recyclerView.setVisibility(View.VISIBLE);
                     recyclerView.setAdapter(adapter);
                     Log.e(TAG, "onCreateView:size of list " + map.size());
-//                    dialog.dismiss();
+                    progressDialog.setVisibility(View.INVISIBLE);
                 }
             }
         }, error -> {
@@ -260,7 +253,7 @@ public class AccountFragment extends Fragment {
                 }
 
                 Log.e("TAG", "getBody: " + object.toString());
-                dialog.dismiss();
+//                dialog.dismiss();
                 return object.toString().getBytes();
             }
         };
@@ -306,14 +299,10 @@ public class AccountFragment extends Fragment {
         imageView = getActivity().findViewById(R.id.nodatafound);
         map = new ArrayList<>();
 
-//        dialog = new ProgressDialog(getContext());
-//        dialog.setCancelable(true);
-//        dialog.setMessage("Loading...........");
+        progressDialog=getActivity().findViewById(R.id.indeterminateBarinfrag);
 
-//        dialog.show();
         request = (JsonObjectRequest) ReqestModule(moduleUrl + "1", auth);
         queue.add(request);
-//        dialog.dismiss();
 
 
         Log.e(TAG, "onCreateView:getSelectedItemPosition " + recyclerView.getSelectedItemPosition());
@@ -324,7 +313,7 @@ public class AccountFragment extends Fragment {
                 if (!recyclerView.canScrollVertically(1)) {
                     Log.e(TAG, "onScrollStateChanged: you are at the bottom");
                     if (nexturl == null) {
-                        dialog.dismiss();
+//                        dialog.dismiss();
                         Snackbar.make(getView(), "this is the end", Snackbar.LENGTH_SHORT).show();
                     } else {
                         request = (JsonObjectRequest) ReqestModule(nexturl, auth);

@@ -26,6 +26,18 @@
         android:visibility="invisible"/>
 
 
+    <ProgressBar
+        android:id="@+id/indeterminateBarinfrag"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:foregroundGravity="center"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/nav_host_fragment"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/nav_host_fragment"
+        tools:ignore="MissingConstraints" />
 
     <include layout="@layout/swipe_to_refresh"
         android:layout_width="match_parent"

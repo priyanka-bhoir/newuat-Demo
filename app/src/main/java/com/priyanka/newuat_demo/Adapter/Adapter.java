@@ -172,7 +172,7 @@ public class Adapter extends ArrayAdapter<HashMap<String, String>> implements Ac
                     if (!(map.get(object1.getString(2)).equals(""))) {
                         String email = map.get(object1.getString(2));
                         Log.e(TAG, "getView:email " + email);
-                        OpenDialog(email, 2, context);
+                        OpenDialog(email, 2, context,activity);
                     } else {
                         Toast.makeText(context, "No Data Found", Toast.LENGTH_SHORT).show();
                     }
@@ -186,7 +186,7 @@ public class Adapter extends ArrayAdapter<HashMap<String, String>> implements Ac
                 if (object1.getString(3).equals("phone")) {
                     if (!(map.get(object1.getString(3)).equals(""))) {
                         String num1 = map.get(object1.getString(3));
-                        OpenDialog(num1, 3, context);
+                        OpenDialog(num1, 3, context,activity);
                     } else {
                         Toast.makeText(context, "No Data Found", Toast.LENGTH_SHORT).show();
                     }
@@ -209,7 +209,7 @@ public class Adapter extends ArrayAdapter<HashMap<String, String>> implements Ac
                                     .setMessage("permission required to send messages")
                                     .setPositiveButton("OK", null).show();
                         } else {
-                            OpenDialog(num, 1, context);
+                            OpenDialog(num, 1, context,activity);
                         }
                     } else {
                         Toast.makeText(context, "No Data Found", Toast.LENGTH_SHORT).show();
@@ -227,7 +227,7 @@ public class Adapter extends ArrayAdapter<HashMap<String, String>> implements Ac
             @Override
             public void onClick(View v) {
                 Log.e(TAG, "onClick: hey you clicked card view " );
-                Log.e(TAG, "onClick: id"+id );
+                Log.e(TAG, "onClick: this is the id you search for ===>"+id );
                 Intent i =new Intent(activity, Detail.class);
                 i.putExtra("id",id);
                 i.putExtra("module_name",mParam1);
@@ -289,7 +289,7 @@ public class Adapter extends ArrayAdapter<HashMap<String, String>> implements Ac
         }
     }
 
-    public void OpenDialog(String position, int flag, Context context) {
+    public void OpenDialog(String position, int flag, Context context,Activity activity) {
 
         TextInputEditText editText, subject;
         TextInputLayout subject_layout;
