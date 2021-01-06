@@ -3,9 +3,9 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    app:cardCornerRadius="10dp"
-    app:cardElevation="10dp"
-    android:padding="10dp">
+    app:cardCornerRadius="20dp"
+    app:cardElevation="20dp"
+    android:padding="20dp">
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -13,13 +13,15 @@
         android:padding="10dp">
     <TextView
         android:id="@+id/card_key"
+        android:padding="15dp"
         android:layout_width="150sp"
         android:layout_height="match_parent"
-        android:text="key"/>
+        />
     <TextView
+        android:padding="15dp"
         android:id="@+id/card_value"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="value"/>
+        />
     </LinearLayout>
 </androidx.cardview.widget.CardView>

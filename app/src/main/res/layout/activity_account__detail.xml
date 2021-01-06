@@ -162,11 +162,13 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/card">
         <com.google.android.material.tabs.TabItem
+            android:id="@+id/tabitem1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="DETAILS"/>
 
         <com.google.android.material.tabs.TabItem
+            android:id="@+id/tabitem2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="RELATED" />

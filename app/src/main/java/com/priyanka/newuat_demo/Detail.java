@@ -111,14 +111,6 @@ public class Detail extends AppCompatActivity {
     Geocoder geocoder;
     List<Address> addresses;
 
-
-//    Context context;
-
-//    private FragmentStateAdapter createCardAdapter() {
-//        ViewPagerAdapter adapter = new ViewPagerAdapter(this);
-//        return (PagerAdapter)adapter;
-//    }
-
     private final List<Fragment> fragments = new ArrayList<>();
     private final List<String> fragmentTitle = new ArrayList<>();
     private String errormessage;
@@ -179,34 +171,32 @@ public class Detail extends AppCompatActivity {
         //request
         detailtabrequest(url + version + URL_DETAIL);
 
-
-
-        tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
-            @Override
-            public void onTabSelected(TabLayout.Tab tab) {
-                Log.e(TAG, "onTabSelected: " + tab.getPosition());
-                if (tab.getPosition() == 0) {
-                    //send detail request
-//                    detailtabrequest(url + version + URL_DETAIL);
-                } else {
-                    //send Related
-                    relatetabreqest(url + version + URL_SUB_LAYOUT);
-
-                }
-            }
-
-            @Override
-            public void onTabUnselected(TabLayout.Tab tab) {
-
-            }
-
-            @Override
-            public void onTabReselected(TabLayout.Tab tab) {
-
-            }
-        });
+//        tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+//            @Override
+//            public void onTabSelected(TabLayout.Tab tab) {
+//                Log.e(TAG, "onTabSelected: " + tab.getPosition());
+//                if (tab.getPosition() == 0) {
+//                    //send detail request
+////                    detailtabrequest(url + version + URL_DETAIL);
+//                } else {
+//                    //send Related
+//                    relatetabreqest(url + version + URL_SUB_LAYOUT);
+//
+//                }
+//            }
+//
+//            @Override
+//            public void onTabUnselected(TabLayout.Tab tab) {
+//
+//            }
+//
+//            @Override
+//            public void onTabReselected(TabLayout.Tab tab) {
+//
+//            }
+//        });
+        tabLayout.setupWithViewPager(viewPager);
     }
-
 
     private void detailtabrequest(String url) {
         Log.e(TAG, "detailtabrequest:auth--> " + auth);
@@ -479,6 +469,7 @@ public class Detail extends AppCompatActivity {
         TextView textView=view.findViewById(R.id.pick_a_num_title);
         ListView listView=view.findViewById(R.id.pickanum_list);
         ArrayAdapter<String> adapterlist;
+        final String[] address = new String[1];
         adapterlist=new ArrayAdapter<String>(Detail.this,android.R.layout.simple_list_item_1,arrayListnumbers);
         listView.setAdapter(adapterlist);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -506,31 +497,38 @@ public class Detail extends AppCompatActivity {
                 else if (flag==5){
                     // this if for map
                     textView.setText("Pick a Address");
-//                    i=new Intent(getApplicationContext(),MapsActivity.class);
-//                    i.putExtra("address",arrayListnumbers.get(position));
-//                    startActivity(i);
-                    double latitude = 0;
-                    double logitude = 0;
-
+                    geocoder=new Geocoder(getApplicationContext());
+                    addresses=new ArrayList<>();
                     try {
-                        geocoder=new Geocoder(getApplicationContext());
-                        addresses=new ArrayList<>();
                         addresses=geocoder.getFromLocationName(arrayListnumbers.get(position),5);
-
-                        Address locaton=addresses.get(0);
-                        latitude=locaton.getLatitude();
-                        logitude=locaton.getLongitude();
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                    String add="http://maps.google.com/maps?q="+latitude+","+logitude+"(Hey you are here!)&iwloc=A&hl=es";
-                    Log.e(TAG, "onItemClick:this is your selected address==> "+add );
-                    Uri gmmIntentUri = Uri.parse(add);
-                    Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
-                    mapIntent.setPackage("com.google.android.apps.maps");
-                    startActivity(mapIntent);
+                    ArrayList<String> list = new ArrayList<>();
+                    list.add("Open via Google maps");
+                    list.add("Open via inbuilt appliactions map");
+                    Pickanumber(list,6);
+                }else if (flag==6){
+                    double latitude = 0;
+                    double logitude = 0;
+                    Address locaton=addresses.get(0);
+                    latitude=locaton.getLatitude();
+                    logitude=locaton.getLongitude();
+                    if (arrayListnumbers.get(position).equals("Open via Google maps")){
+                        String add="http://maps.google.com/maps?q="+latitude+","+logitude+"(Hey you are here!)";
+                        Log.e(TAG, "onItemClick:this is your selected address==> "+add );
+                        Uri gmmIntentUri = Uri.parse(add);
+                        Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
+                        mapIntent.setPackage("com.google.android.apps.maps");
+                        startActivity(mapIntent);
 
-
+                    }else if (arrayListnumbers.get(position).equals("Open via inbuilt appliactions map")){
+                        i=new Intent(getApplicationContext(),MapsActivity.class);
+                        i.putExtra("latitude",locaton.getLatitude());
+                        Log.e(TAG, "onItemClick: "+ locaton.getLatitude());
+                        i.putExtra("longitude",locaton.getLongitude());
+                        startActivity(i);
+                    }
                 }
             }
         });

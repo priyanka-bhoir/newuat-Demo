@@ -52,21 +52,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         double logitude = 0;
 
         Intent  i=getIntent();
-        String address= i.getStringExtra("address");
-
-        try {
-            addresses=geocoder.getFromLocationName(address,5);
-
-            Address locaton=addresses.get(0);
-            latitude=locaton.getLatitude();
-            logitude=locaton.getLongitude();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        Log.e(TAG, "onMapReady: "+address );
+//        Log.e(TAG, "onMapReady: "+i.getStringExtra("latitude") );
+            latitude= i.getDoubleExtra("latitude",4);
+            logitude= i.getDoubleExtra("longitude",4);
         // Add a marker in Sydney and move the camera
         LatLng sydney = new LatLng(latitude, logitude);
-        mMap.addMarker(new MarkerOptions().position(sydney).title(address));
+        mMap.addMarker(new MarkerOptions().position(sydney).title("hey! You are here"));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
     }
 }

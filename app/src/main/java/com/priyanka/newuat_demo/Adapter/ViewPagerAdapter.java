@@ -3,6 +3,7 @@ package com.priyanka.newuat_demo.Adapter;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
@@ -21,6 +22,7 @@ public class ViewPagerAdapter extends FragmentPagerAdapter {
     Detailsadapter detailsadapter;
     ArrayList<String> listOfKeys;
     ArrayList<String> listOfValues;
+    private String tabTitles[] = new String[]{"DETAILS", "RELATED"};
 
     public ViewPagerAdapter(@NonNull FragmentManager fm, int behavior, Detailsadapter detailsadapter) {
         super(fm, behavior);
@@ -54,5 +56,12 @@ public class ViewPagerAdapter extends FragmentPagerAdapter {
     @Override
     public int getCount() {
         return 2;
+    }
+
+    @Nullable
+    @Override
+    public CharSequence getPageTitle(int position) {
+        Log.e(TAG, "getPageTitle: i am here to set yout tab titile " );
+        return tabTitles[position];
     }
 }
