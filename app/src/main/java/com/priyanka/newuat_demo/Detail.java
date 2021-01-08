@@ -14,16 +14,21 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
+import android.content.ContentProviderOperation;
+import android.content.ContentResolver;
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.OperationApplicationException;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.location.Address;
 import android.location.Geocoder;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.RemoteException;
 import android.provider.Contacts;
 import android.provider.ContactsContract;
 import android.telephony.SmsManager;
@@ -49,6 +54,7 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.developer.dk.toastmessage.ToasterMsg;
 import com.google.android.material.tabs.TabItem;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.textfield.TextInputEditText;
@@ -94,7 +100,7 @@ public class Detail extends AppCompatActivity {
     TabItem tabitem_details, tabitem_realted;
     ArrayList<HashMap<String, String>> map;
     Databasehelper databasehelper;
-    String mParam2,email,number;
+    String mParam2,email,number,Website;
     ViewPagerAdapter viewPagerAdapter;
     ImageView imageView;
     ListView listView;
@@ -110,6 +116,7 @@ public class Detail extends AppCompatActivity {
     ArrayList<String> arrayListnumbers,arrayListEmail,arrayListaddress;
     Geocoder geocoder;
     List<Address> addresses;
+    ContentValues values;
 
     private final List<Fragment> fragments = new ArrayList<>();
     private final List<String> fragmentTitle = new ArrayList<>();
@@ -245,32 +252,6 @@ public class Detail extends AppCompatActivity {
 ////                listView.setVisibility(View.INVISIBLE);
 //            }
 //            else if (name_value_list.length()>0){
-            Set<String> keySet = hashMap.keySet();
-            ArrayList<String> listOfKeys = new ArrayList<String>(keySet);
-            Collection<String> value=  hashMap.values();
-            ArrayList<String> listOfValues = new ArrayList<String>(value);
-
-            for(int i=0;i<listOfKeys.size();i++){
-                if (listOfKeys.get(i).equals("name")){
-                    displayname=listOfValues.get(i);
-                }
-                if (listOfKeys.get(i).equals("industry")){
-                    companyname=listOfValues.get(i);
-                }
-                if (listOfKeys.get(i).equals("email")){
-                    email=listOfValues.get(i);
-                }
-                if (listOfKeys.get(i).equals("phone")){
-                    number=listOfValues.get(i);
-                }
-            }
-            name_txt.setText((!displayname.isEmpty())?displayname : "");
-            company_txt.setText((!companyname.isEmpty())?companyname : "");
-            //view pager
-            viewPagerAdapter=new ViewPagerAdapter(getSupportFragmentManager(),1,listOfKeys,listOfValues,module);
-            viewPager.setAdapter(viewPagerAdapter);
-            viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
-
 
             //for number
             arrayListnumbers=new ArrayList<>();
@@ -284,6 +265,52 @@ public class Detail extends AppCompatActivity {
             arrayListaddress=new ArrayList<>();
             arrayListaddress=fetchAddress("hiddenAddress",arrayListaddress);
             Log.e(TAG, "detailtabrequest: "+arrayListaddress );
+
+
+            Set<String> keySet = hashMap.keySet();
+            ArrayList<String> listOfKeys = new ArrayList<String>(keySet);
+            Collection<String> value=  hashMap.values();
+            ArrayList<String> listOfValues = new ArrayList<String>(value);
+
+            for(int i=0;i<listOfKeys.size();i++){
+                if (listOfKeys.get(i).equals("name")){
+                    displayname=listOfValues.get(i);
+                }
+                if (listOfKeys.get(i).equals("industry")){
+                    companyname=listOfValues.get(i);
+                }
+                if (listOfKeys.get(i).equals("email")){
+                    if (!arrayListEmail.isEmpty()){
+                        email=listOfValues.get(i);
+                        String s=arrayListEmail.get(0);
+                        listOfValues.set(i,s);
+                    }
+                }
+                if (listOfKeys.get(i).equals("phone")){
+                    if (!arrayListnumbers.isEmpty()){
+                        String s=arrayListnumbers.get(0);
+                        number=listOfValues.get(i);
+                        listOfValues.set(i,s);
+                    }
+                }
+                if (listOfKeys.get(i).equals("address")){
+                    if (!arrayListaddress.isEmpty()){
+                        String s=arrayListaddress.get(0);
+                        listOfValues.set(i,s);
+                    }
+                }if (listOfKeys.get(i).equals("website")){
+                    Website=listOfValues.get(i);
+                }
+            }
+            name_txt.setText((!displayname.isEmpty())?displayname : "");
+            company_txt.setText((!companyname.isEmpty())?companyname : "");
+            //view pager
+            viewPagerAdapter=new ViewPagerAdapter(getSupportFragmentManager(),1,listOfKeys,listOfValues,module);
+            viewPager.setAdapter(viewPagerAdapter);
+            viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
+
+
+
             //Setting OnClickListeners
             call_img.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -350,6 +377,7 @@ public class Detail extends AppCompatActivity {
                     if (arrayListnumbers.isEmpty()){
                         Toast.makeText(getApplicationContext(), "No Data Found", Toast.LENGTH_SHORT).show();
                     }else {
+//                        ToasterMsg.showMessage(getApplicationContext(),"Priyanka");
                         Pickanumber(arrayListnumbers,3);
                     }
                 }
@@ -396,13 +424,7 @@ public class Detail extends AppCompatActivity {
 //                            new String[]{Manifest.permission.SEND_SMS},
 //                            9);
                             } else {
-                                ContentValues values = new ContentValues();
-                                values.put(ContactsContract.CommonDataKinds.Phone.SEARCH_DISPLAY_NAME_KEY, displayname);
-//                        arrayListnumbers.get(0);
-                                values.put(ContactsContract.CommonDataKinds.Phone.SEARCH_PHONE_NUMBER_KEY, arrayListnumbers.get(0));
-                                getContentResolver().insert(ContactsContract.RawContacts.CONTENT_URI, values);
-                                Toast.makeText(getApplicationContext(), "Your Data got inserted.....!", Toast.LENGTH_SHORT).show();
-//                        getContentResolver().insert(addContactsUri, values);
+                                Import_Contact();
                             }
                         }
                     }
@@ -456,6 +478,100 @@ public class Detail extends AppCompatActivity {
 
         queue.add(request);
         Log.e(TAG, "detailtabrequest===: " + request);
+    }
+
+    private void Import_Contact() {
+        ContentValues values = new ContentValues();
+        String num=arrayListnumbers.get(0);
+        Log.e(TAG, "Import_Contact: "+displayname+"num=>"+num);
+        long rowContactId = getRawContactId();
+        Log.e(TAG, "Import_Contact:RAW_CONTACT_ID==> "+rowContactId );
+        Uri addContactsUri = ContactsContract.Data.CONTENT_URI;
+        //inserting name
+        insertContactName(addContactsUri,rowContactId,displayname);
+
+        // this is for phone
+        String phoneTypeStr = "Mobile";
+        for(int i=0;i<arrayListnumbers.size();i++) {
+            insertContactNumber(addContactsUri, rowContactId, arrayListnumbers.get(i), phoneTypeStr);
+        }
+        //insert Email
+        for(int i=0;i<arrayListEmail.size();i++) {
+            insertContactEmail(addContactsUri, rowContactId, arrayListEmail.get(i));
+        }
+        //insert Address
+        for(int i=0;i<arrayListaddress.size();i++) {
+            insertContactAddress(addContactsUri, rowContactId, arrayListaddress.get(i));
+        }
+        //insert URL
+        insertContactURL(addContactsUri,rowContactId,Website);
+        Toast.makeText(getApplicationContext(), "Your Data got inserted.....!", Toast.LENGTH_SHORT).show();
+//                        getContentResolver().insert(addContactsUri, values);
+    }
+    void insertContactName(Uri addContactsUri, long rawContactId, String displayName){
+        values = new ContentValues();
+        values.put(ContactsContract.Data.RAW_CONTACT_ID,rawContactId);
+        values.put(ContactsContract.Data.MIMETYPE,ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE);
+        values.put(ContactsContract.CommonDataKinds.StructuredName.GIVEN_NAME,displayName);
+        getContentResolver().insert(addContactsUri,values);
+    }
+    void insertContactNumber(Uri addContactsUri, long rawContactId, String phoneNumber, String phoneTypeStr){
+        values=new ContentValues();
+        values.put(ContactsContract.Data.RAW_CONTACT_ID,rawContactId);
+        values.put(ContactsContract.Data.MIMETYPE,ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE);
+        int phoneContactType = ContactsContract.CommonDataKinds.Phone.TYPE_HOME;
+//        String phoneTypeStr=arrayListnumbers.get(0);
+        if("home".equalsIgnoreCase(phoneTypeStr))
+        {
+            phoneContactType = ContactsContract.CommonDataKinds.Phone.TYPE_HOME;
+        }else if("mobile".equalsIgnoreCase(phoneTypeStr))
+        {
+            phoneContactType = ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE;
+        }else if("work".equalsIgnoreCase(phoneTypeStr))
+        {
+            phoneContactType = ContactsContract.CommonDataKinds.Phone.TYPE_WORK;
+        }
+//         Put phone type value.
+        values.put(ContactsContract.CommonDataKinds.Phone.TYPE,  phoneContactType);
+        values.put(ContactsContract.CommonDataKinds.Phone.NUMBER,phoneNumber);
+        getContentResolver().insert(addContactsUri,values);
+    }
+    void insertContactEmail(Uri addContactsUri, long rawContactId, String Email){
+        Log.e(TAG, "insertContactEmail: he he i got Email"+Email);
+        values=new ContentValues();
+        values.put(ContactsContract.Data.RAW_CONTACT_ID,rawContactId);
+        values.put(ContactsContract.Data.MIMETYPE,ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE);
+        values.put(ContactsContract.CommonDataKinds.Email.TYPE,ContactsContract.CommonDataKinds.Email.TYPE_HOME);
+        values.put(ContactsContract.CommonDataKinds.Email.DATA,Email);
+        getContentResolver().insert(addContactsUri,values);
+    }
+    void insertContactAddress(Uri addContactsUri, long rawContactId, String Address){
+        Log.e(TAG, "insertContactEmail: he he i got Address"+Address);
+        values=new ContentValues();
+        values.put(ContactsContract.Data.RAW_CONTACT_ID,rawContactId);
+        values.put(ContactsContract.Data.MIMETYPE,ContactsContract.CommonDataKinds.SipAddress.CONTENT_ITEM_TYPE);
+        values.put(ContactsContract.CommonDataKinds.SipAddress.TYPE,ContactsContract.CommonDataKinds.SipAddress.TYPE_HOME);
+        values.put(ContactsContract.CommonDataKinds.SipAddress.DATA,Address);
+        getContentResolver().insert(addContactsUri,values);
+    }
+    void insertContactURL(Uri addContactsUri, long rawContactId, String URL){
+        Log.e(TAG, "insertContactEmail: he he i got Address"+URL);
+        values=new ContentValues();
+        values.put(ContactsContract.Data.RAW_CONTACT_ID,rawContactId);
+        values.put(ContactsContract.Data.MIMETYPE,ContactsContract.CommonDataKinds.Website.CONTENT_ITEM_TYPE);
+        values.put(ContactsContract.CommonDataKinds.Website.TYPE,ContactsContract.CommonDataKinds.Website.TYPE_OTHER);
+        values.put(ContactsContract.CommonDataKinds.Website.URL,URL);
+        getContentResolver().insert(addContactsUri,values);
+    }
+
+    private long getRawContactId()
+    {
+        // Inser an empty contact.
+        ContentValues contentValues = new ContentValues();
+        Uri rawContactUri = getContentResolver().insert(ContactsContract.RawContacts.CONTENT_URI, contentValues);
+        // Get the newly created contact raw id.
+        long ret = ContentUris.parseId(rawContactUri);
+        return ret;
     }
 
     private void Pickanumber(ArrayList<String> arrayListnumbers,int flag) {

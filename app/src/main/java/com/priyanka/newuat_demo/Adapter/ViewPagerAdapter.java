@@ -22,7 +22,7 @@ public class ViewPagerAdapter extends FragmentPagerAdapter {
     Detailsadapter detailsadapter;
     ArrayList<String> listOfKeys;
     ArrayList<String> listOfValues;
-    private String tabTitles[] = new String[]{"DETAILS", "RELATED"};
+    private final String[] tabTitles = new String[]{"DETAILS", "RELATED"};
 
     public ViewPagerAdapter(@NonNull FragmentManager fm, int behavior, Detailsadapter detailsadapter) {
         super(fm, behavior);

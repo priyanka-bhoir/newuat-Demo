@@ -1,5 +1,7 @@
 package com.priyanka.newuat_demo.Adapter;
 
+import android.animation.Animator;
+import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Build;
@@ -34,8 +36,12 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.regex.Pattern;
 
 import static android.R.color.darker_gray;
 import static com.priyanka.newuat_demo.R.color.design_default_color_background;
@@ -49,6 +55,8 @@ public class Detailsadapter extends ArrayAdapter<ArrayList<String>>{
     String module;
     Databasehelper db;
     Details_frag.NameValue nameValue;
+    String value;
+    int maxliens;
 
 
     public Detailsadapter(String module,@NonNull Context context, int resource, ArrayList<String> keySet, ArrayList<String> listOfValues) {
@@ -58,7 +66,6 @@ public class Detailsadapter extends ArrayAdapter<ArrayList<String>>{
         this.keyset=keySet;
         this.values=listOfValues;
         this.module=module;
-//        Log.e(TAG, "Detailsadapter:you are in these module====> "+module );
         Log.e(TAG, "Detailsadapter: "+"Details_Adapter created" );
     }
 
@@ -104,10 +111,112 @@ public class Detailsadapter extends ArrayAdapter<ArrayList<String>>{
                 viewHlder.value.setText(values.get(position));
                 Linkify.addLinks(viewHlder.value,Linkify.EMAIL_ADDRESSES);
                 viewHlder.value.setMovementMethod(LinkMovementMethod.getInstance());
-            }else if (key.equals("Description")) {
+            }
+            else if (key.equals("Phone")){
                 viewHlder.key.setText(key);
                 viewHlder.value.setText(values.get(position));
-                makeTextViewResizable(viewHlder.value, 3, "See More", true);
+                Linkify.addLinks(viewHlder.value,Linkify.PHONE_NUMBERS);
+                viewHlder.value.setMovementMethod(LinkMovementMethod.getInstance());
+            }else if (key.equals("Address")){
+                viewHlder.key.setText(key);
+                Log.e(TAG, "getView: hey its me your address i am called(" );
+                Pattern pattern = Pattern.compile(".*", Pattern.DOTALL);
+                viewHlder.value.setText(values.get(position));
+                Linkify.addLinks(viewHlder.value, pattern, "geo:0,0?q=");
+                viewHlder.value.setMovementMethod(LinkMovementMethod.getInstance());
+            }else if (key.equals("Updated At")||key.equals("Created At")){
+                viewHlder.key.setText(key);
+                String dateTime=formatDateTime(values.get(position));
+                viewHlder.value.setText(dateTime);
+            }
+            else if (key.equals("Description")) {
+                viewHlder.key.setText(key);
+                viewHlder.value.setText(values.get(position));
+                value=values.get(position);
+                maxliens=viewHlder.value.getMaxLines();
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    maxliens=viewHlder.value.getAutoSizeMaxTextSize();
+                }
+                Log.e(TAG, "getView: this is the original data =>"+values.get(position) );
+                Log.e(TAG, "getView: this is the vale of value==>"+value);
+                viewHlder.value.post(new Runnable() {
+                    @SuppressLint("ResourceAsColor")
+                    @Override
+                    public void run() {
+                        // Past the maximum number of lines we want to display.
+//                        collapsedHeight[0] = viewHlder.value.getMeasuredHeight();
+//                        }
+//                        if (viewHlder.value.getLineCount() > MAX_LINES) {
+//                            int lastCharShown = viewHlder.value.getLayout().getLineVisibleEnd(MAX_LINES - 1);
+//
+//                            viewHlder.value.setMaxLines(MAX_LINES);
+//
+//                            viewHlder.value.measure(View.MeasureSpec.makeMeasureSpec(viewHlder.getMeasuredWidth(), View.MeasureSpec.EXACTLY), View.MeasureSpec.makeMeasureSpec(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED));
+//                            expandedHeight[0] = viewHlder.value.getMeasuredHeight();
+//                            ObjectAnimator animation = ObjectAnimator.ofInt(viewHlder.value, "height", collapsedHeight[0], expandedHeight[0]);
+//                            animation.setDuration(250).start();
+//                        } else {
+//                            // collapse
+//                            ObjectAnimator animation = ObjectAnimator.ofInt(viewHlder.value, "height", expandedHeight[0], collapsedHeight[0]);
+//                            animation.addListener(new Animator.AnimatorListener() {
+//                                @Override
+//                                public void onAnimationStart(Animator animator) {
+//
+//                                }
+//
+//                                @Override
+//                                public void onAnimationEnd(Animator animator) {
+//                                    // number of max lines when collapsed
+//                                    viewHlder.value.setMaxLines(2);
+//                                }
+//
+//                                @Override
+//                                public void onAnimationCancel(Animator animator) {
+//
+//                                }
+//
+//                                @Override
+//                                public void onAnimationRepeat(Animator animator) {
+//
+//                                }
+//                            });
+//                            animation.setDuration(250).start();
+//                        }
+
+                        int MAX_LINES = 2;
+                        if (viewHlder.value.getLineCount() > MAX_LINES) {
+                            int lastCharShown = viewHlder.value.getLayout().getLineVisibleEnd(MAX_LINES - 1);
+
+                            viewHlder.value.setMaxLines(MAX_LINES);
+                            String moreString = "Read More";
+                            String suffix = "  " + moreString;
+
+                            // 3 is a "magic number" but it's just basically the length of the ellipsis we're going to insert
+                            String actionDisplayText = values.get(position).substring(0, lastCharShown - suffix.length() - 3) + "..." + suffix;
+                            SpannableStringBuilder truncatedSpannableString = new SpannableStringBuilder(actionDisplayText);
+                            int startIndex = actionDisplayText.indexOf(moreString);
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                                truncatedSpannableString.setSpan(new ForegroundColorSpan(R.color.purple_200),
+                                        startIndex, startIndex + moreString.length(),
+                                        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                            }
+
+//                            truncatedSpannableString.setSpan(new Spannable(false));
+//                            truncatedSpannableString.setSpan(new MySpannable(false));
+                            viewHlder.value.setText(truncatedSpannableString);
+                        }
+                    }
+                });
+                viewHlder.value.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Log.e(TAG, "onClick: this is value that get displayed on read more =>"+ value);
+//                        viewHlder.value.setMaxLines(maxliens);
+                        Log.e(TAG, "onClick: this is the size of my text view"+viewHlder.value.getMaxLines());
+                        viewHlder.value.setMaxLines(maxliens);
+                        viewHlder.value.setText(value);
+                    }
+                });
             }
             else if (key!=null){
                 viewHlder.key.setText(key);
@@ -119,6 +228,25 @@ public class Detailsadapter extends ArrayAdapter<ArrayList<String>>{
 
         return convertView;
     }
+
+    private String formatDateTime(String s) {
+        String inputPattern = "yyyy-MM-dd HH:mm:ss";
+        String outputPattern = "dd-MMM-yyyy h:mm a";
+        SimpleDateFormat inputFormat = new SimpleDateFormat(inputPattern);
+        SimpleDateFormat outputFormat = new SimpleDateFormat(outputPattern);
+
+        Date date = null;
+        String str = null;
+
+        try {
+            date = inputFormat.parse(s);
+            str = outputFormat.format(date);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return str;
+    }
+
     private class ItemViewHlder extends View{
         TextView key;
         TextView value;
@@ -148,7 +276,7 @@ public class Detailsadapter extends ArrayAdapter<ArrayList<String>>{
 
     // this function is for read more feature
     public static void makeTextViewResizable(final TextView tv, final int maxLine, final String expandText, final boolean viewMore) {
-        Log.e(TAG, "makeTextViewResizable:  i am called" );
+        Log.e(TAG, "makeTextViewResizable:  i am called" +tv.getText());
 
         if (tv.getTag() == null) {
             tv.setTag(tv.getText());
