@@ -28,7 +28,7 @@ public class ViewPagerAdapter extends FragmentPagerAdapter {
         super(fm, behavior);
         this.id=id;
         this.module=module;
-        Log.e(TAG, "ViewPagerAdapter: "+"viewpager created" +id+"||==>"+module);
+//        Log.e(TAG, "ViewPagerAdapter: "+"viewpager created" +id+"||==>"+module);
     }
 
     public ViewPagerAdapter(FragmentManager supportFragmentManager, int i, ArrayList<String> listOfKeys, ArrayList<String> listOfValues, String module) {
@@ -61,7 +61,7 @@ public class ViewPagerAdapter extends FragmentPagerAdapter {
     @Nullable
     @Override
     public CharSequence getPageTitle(int position) {
-        Log.e(TAG, "getPageTitle: i am here to set yout tab titile " );
+//        Log.e(TAG, "getPageTitle: i am here to set yout tab titile " );
         return tabTitles[position];
     }
 }

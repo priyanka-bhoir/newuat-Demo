@@ -145,6 +145,7 @@ public class Detail extends AppCompatActivity {
         };
         id = i.getStringExtra("id");
         module = i.getStringExtra("module_name");
+
         //id s find
         //images
 
@@ -226,6 +227,8 @@ public class Detail extends AppCompatActivity {
                 JSONArray relationship_list = object.getJSONArray("relationship_list");
                 multi_fields = object.getJSONObject("multi_fields");
                 Log.e(TAG, "detailtabrequest:name_value_list==> " + name_value_list);
+                // here the progress bar got invisible when toy get requellst
+                progressDialog.setVisibility(View.INVISIBLE);
                 ArrayList<String> keyList = new ArrayList<>();
                 ArrayList<String> Valuelist=new ArrayList<>();
                 Iterator<String> keys=name_value_list.keys();
@@ -235,13 +238,45 @@ public class Detail extends AppCompatActivity {
                 }
                 Log.e(TAG, "detailtabrequest: "+keyList);
                 Log.e(TAG, "detailtabrequest: "+name_value_list.length() );
+
+                String key= null;
                 for (int i = 0; i < name_value_list.length(); i++) {
                     JSONObject jsonObject=name_value_list.getJSONObject(keyList.get(i));
-                    hashMap.put(jsonObject.getString("name"),jsonObject.getString("value"));
-                    Log.e(TAG, "detailtabrequest:hashMap==> "+hashMap );
-                    Valuelist.add(jsonObject.getString("value"));
+                    key=getDisplayNames(jsonObject.getString("name"));
+                    Log.e(TAG, "detailtabrequest: hey  here ve are fetching names "+jsonObject.getString("name")+":"+key );
+//                    Log.e(TAG, "I am your key i came form databsed=>"+key );
+                    switch (jsonObject.getString("name")){
+                        case "id":
+                            Log.e(TAG, "I am your id"+jsonObject.getString("name"));
+                            id=jsonObject.getString("value");
+                            break;
+                        case "isfavorite":
+                            String s=jsonObject.getString("value");
+                            if (s.equals("true")){
+                                favroite_img.setImageResource(R.drawable.ic_baseline_star_24);
+                            }
+                            break;
+                        case "null":
+                            Log.e(TAG, "detailtabrequest:this is the null break " );
+                            break;
+                        case "account_id":
+                            hashMap.put("Member of",jsonObject.getString("value"));
+                            break;
+                        case "assigned_user_id_name":
+                            Log.e(TAG, "detailtabrequest: i am Assigned to" );
+                            hashMap.put("Assigned To",jsonObject.getString("value"));
+                            break;
+                        default:
+                            Log.e(TAG, "detailtabrequest: Switch default case called" );
+                            if (key!=null){
+                                hashMap.put(key,jsonObject.getString("value"));
+                            }
+                    }
+//                    Log.e(TAG, "detailtabrequest:hashMap==> "+hashMap );
+//                    Valuelist.add(jsonObject.getString("value"));
                 }
                 Log.e(TAG, "detailtabrequest:this is the size of map====>"+ hashMap.size());
+                Log.e(TAG, "detailtabrequest:this is the map====>"+ hashMap);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -267,43 +302,51 @@ public class Detail extends AppCompatActivity {
             Log.e(TAG, "detailtabrequest: "+arrayListaddress );
 
 
+            Log.e(TAG, "hashmap keyset=: "+hashMap.keySet() );
+            Log.e(TAG, "hashmap valueset=: "+hashMap.values() );
             Set<String> keySet = hashMap.keySet();
             ArrayList<String> listOfKeys = new ArrayList<String>(keySet);
             Collection<String> value=  hashMap.values();
             ArrayList<String> listOfValues = new ArrayList<String>(value);
 
             for(int i=0;i<listOfKeys.size();i++){
-                if (listOfKeys.get(i).equals("name")){
+                Log.e(TAG, "==>key:"+listOfKeys.get(i)+" value:"+listOfValues.get(i));
+                if (listOfKeys.get(i).equals("Name")){
                     displayname=listOfValues.get(i);
                 }
-                if (listOfKeys.get(i).equals("industry")){
+                if (listOfKeys.get(i).equals("Industry")){
                     companyname=listOfValues.get(i);
                 }
-                if (listOfKeys.get(i).equals("email")){
+                if (listOfKeys.get(i).equals("Email")){
                     if (!arrayListEmail.isEmpty()){
                         email=listOfValues.get(i);
                         String s=arrayListEmail.get(0);
                         listOfValues.set(i,s);
                     }
                 }
-                if (listOfKeys.get(i).equals("phone")){
+                if (listOfKeys.get(i).equals("Phone")){
                     if (!arrayListnumbers.isEmpty()){
                         String s=arrayListnumbers.get(0);
                         number=listOfValues.get(i);
                         listOfValues.set(i,s);
                     }
                 }
-                if (listOfKeys.get(i).equals("address")){
+                if (listOfKeys.get(i).equals("Address")){
+                    displayaddress="";
                     if (!arrayListaddress.isEmpty()){
                         String s=arrayListaddress.get(0);
+                        displayaddress=s;
                         listOfValues.set(i,s);
+                        Log.e(TAG, "detailtabrequest: this is address==>"+s );
                     }
-                }if (listOfKeys.get(i).equals("website")){
+                }if (listOfKeys.get(i).equals("Website")){
                     Website=listOfValues.get(i);
                 }
             }
             name_txt.setText((!displayname.isEmpty())?displayname : "");
             company_txt.setText((!companyname.isEmpty())?companyname : "");
+            addr_txt.setText((!displayaddress.isEmpty())?displayaddress:"");
+
             //view pager
             viewPagerAdapter=new ViewPagerAdapter(getSupportFragmentManager(),1,listOfKeys,listOfValues,module);
             viewPager.setAdapter(viewPagerAdapter);
@@ -478,6 +521,21 @@ public class Detail extends AppCompatActivity {
 
         queue.add(request);
         Log.e(TAG, "detailtabrequest===: " + request);
+    }
+    private String getDisplayNames(String key) throws JSONException {
+        String fielddefs=databasehelper.getFielddefs(module);
+        String displayname = null;
+//        Log.e(TAG, "getDisplayNames:===> "+fielddefs );
+        JSONArray jsonArray=new JSONArray(fielddefs);
+        for (int i=0;i<jsonArray.length();i++) {
+            JSONObject object = jsonArray.getJSONObject(i);
+            if (object.get("name").equals(key)) {
+//                Log.e(TAG, "getDisplayNames:key "+key );
+//                Log.e(TAG, "getDisplayNames:object===> " + object.get("display_label"));
+                displayname=object.optString("display_label");
+            }
+        }
+        return displayname;
     }
 
     private void Import_Contact() {

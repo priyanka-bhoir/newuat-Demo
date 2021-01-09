@@ -13,6 +13,7 @@
     android:layout_height="match_parent"
     tools:context=".Detail">
     <ProgressBar
+        android:elevation="10dp"
         android:id="@+id/indeterminateBar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -35,25 +36,29 @@
 
         <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:background="#EDEDE4"
+            >
+
         <androidx.cardview.widget.CardView
         android:id="@+id/card"
-        android:layout_height="wrap_content"
-        android:layout_width="match_parent"
-        android:gravity="center"
-        android:layout_gravity="center"
-        app:cardElevation="0dp"
+            android:background="@drawable/cardbackgrownd"
+            xmlns:card_view="http://schemas.android.com/apk/res-auto"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:padding="10dp"
+            android:elevation="10dp"
+            android:layout_margin="10dp"
+            card_view:cardCornerRadius="20dp"
         >
 
         <LinearLayout
+            android:background="@drawable/cardbackgrownd"
             android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:gravity="center"
             android:padding="20dp"
-            android:paddingTop="20dp"
-            android:background="@drawable/cardbackgrownd"
-            app:layout_scrollFlags="scroll|enterAlways"
             >
             <LinearLayout
             android:orientation="horizontal"
@@ -65,17 +70,15 @@
             >
             <ImageView
                 android:id="@+id/card_fav"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:padding="10dp"
+                android:layout_width="25dp"
+                android:layout_height="25dp"
                 android:src="@drawable/ic_baseline_star_border_24"/>
 
             <ImageView
                 android:id="@+id/checkin_checkout"
                 android:layout_marginLeft="@dimen/nav_header_height"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:padding="10dp"
+                android:layout_width="25dp"
+                android:layout_height="25dp"
                 android:src="@drawable/ic_baseline_location_on_24"
                 />
 

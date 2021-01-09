@@ -124,11 +124,11 @@ public class Details_frag extends Fragment {
             prefrence=new SharedPrefrence(getContext());
             map = new ArrayList<>();
             databasehelper = new Databasehelper(getContext());
-        Log.e(TAG, "onCreate:module "+module );
+//        Log.e(TAG, "onCreate:module "+module );
             mParam2 = databasehelper.getBackendname(module);
             url=prefrence.getURl();
             auth=variables.BEARER+prefrence.getToken();
-            Log.e(TAG, "onCreate: of details_frag---> "+url );
+//            Log.e(TAG, "onCreate: of details_frag---> "+url );
 
     }
 

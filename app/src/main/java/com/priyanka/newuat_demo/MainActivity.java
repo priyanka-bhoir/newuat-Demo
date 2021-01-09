@@ -20,7 +20,6 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
-import com.developer.dk.toastmessage.ToasterMsg;
 import com.google.android.material.textfield.TextInputEditText;
 import com.priyanka.newuat_demo.Database.Databasehelper;
 
@@ -43,8 +42,6 @@ public class MainActivity extends AppCompatActivity {
     Databasehelper databasehelper;
     private CheckBox checkBox;
     private SharedPreferences.Editor prefeditor;
-    String status;
-    private String TAG="MainActivity";
 
 
     @Override
@@ -57,8 +54,8 @@ public class MainActivity extends AppCompatActivity {
         button=findViewById(R.id.button);
         checkBox=findViewById(R.id.checkBox);
 
-//        startActivity(new Inte~nt(this,drawer.class));
-
+//        startActivity(new Intent(this,drawer.class));
+        
         prefrence=new SharedPrefrence(getApplicationContext());
         databasehelper=new Databasehelper(getApplicationContext());
         SharedPreferences loginPreferences = getSharedPreferences("loginPrefs", MODE_PRIVATE);
@@ -80,8 +77,11 @@ public class MainActivity extends AppCompatActivity {
 //        progressBar.setProgress(0);
 //        progressBar.setMax(100);
 
-//        Log.e("TAG", "onCreate: prefrence"+ prefrence.getUname());
-        i=new Intent(MainActivity.this,drawer.class);
+        Log.e("TAG", "onCreate: prefrence"+ prefrence.getToken());
+        if (prefrence.getToken() != "") {
+            i = new Intent(MainActivity.this, drawer.class);
+            startActivity(i);
+        }
 
         button.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -124,10 +124,12 @@ public class MainActivity extends AppCompatActivity {
                     fetchlogin(name, pass, url);
 
 //                }
-
-
-                }
-            }
+                i=new Intent(MainActivity.this,drawer.class);
+                    if (!MainActivity.this.isFinishing()) {
+                        progressBar.show();
+                    }
+                    startActivity(i);
+                }}
         });
 
     }
@@ -135,35 +137,23 @@ public class MainActivity extends AppCompatActivity {
     private void fetchlogin(String unametxt, String pass, String url) {
 
         Log.e("TAG", "fetchlogin: "+url );
-        progressBar.show();
+
         String urlstr=url+"/api/v1/login";
         RequestQueue queue;
-        Log.e("TAG", "fetchlogin: "+urlstr );
+//        Log.e("TAG", "fetchlogin: "+urlstr );
        JsonObjectRequest objectRequest = new JsonObjectRequest(Request.Method.POST, urlstr, null,
                response -> {
                     try {
                        JSONObject object = response.getJSONObject("data");
-                       status=response.getString("status");
+
                        String a=object.getString("token");
                        String id=object.getString("id");
-                       Log.e("TAG", "onResponse: "+ a);
+//                       Log.e("TAG", "onResponse: "+ a);
                        i.putExtra("token",a);
-//                       startActivity(i);
+                       startActivity(i);
                        prefrence.setToken(a);
                        prefrence.setId(id);
                        databasehelper.insertLogin(object.toString());
-                        if (status.equals(200)){
-                            Log.e(TAG, "fetchlogin: " );
-                            i=new Intent(MainActivity.this,drawer.class);
-//                            if (!MainActivity.this.isFinishing()) {
-//                                progressBar.show();
-//                            }
-                            startActivity(i);
-                        }else {
-                            Log.e(TAG, "fetchlogin:");
-                            progressBar.dismiss();
-                            ToasterMsg.showMessage(getApplicationContext(),"LoginError");
-                        }
 
                    } catch (JSONException e) {
                        e.printStackTrace();
