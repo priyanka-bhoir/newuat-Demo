@@ -24,6 +24,7 @@ public class Databasehelper extends SQLiteOpenHelper {
     public static final String Table_MOBILE_LAYOUT="mobile";
     public static final String Table_GETENTRY_LIST="getentry";
     public static final String LOGIN_JSON="logindata";
+    public static final String Table_TEAM="team";
 
     //for data members of table module
     public static final String ID="id";
@@ -41,6 +42,13 @@ public class Databasehelper extends SQLiteOpenHelper {
     public static final String ENTRY_DATA="data";
     public static final String ENTRY_LINK="link";
     public static final String ENTRY_META="meta";
+
+    // for team table
+    public static final String CREATED_AT="created_at";
+    public static final String UPDATED_AT="updated_at";
+    public static final String DELETED_AT="deleted_at";
+    public static final String NAME="name";
+    public static final String DESCRIPTION="description";
 
     module_pojo data;
     MobileLayout mobileLayout;
@@ -66,6 +74,9 @@ public class Databasehelper extends SQLiteOpenHelper {
 
         //for getEntry
         db.execSQL("create table "+Table_GETENTRY_LIST+"("+ID+" integer primary key,"+MODULENAME+" text, "+ENTRY_DATA+" text,"+ENTRY_LINK+" text,"+ENTRY_META+" text)");
+
+        // this is for Team
+//        db.execSQL("create tale team"+Table_TEAM+"("+ID+" integer primary key,"+CREATED_AT+" text,"+UPDATED_AT+" text,"+DELETED_AT+" text,"+NAME+" text,""+)");
 
     }
 

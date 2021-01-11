@@ -137,8 +137,6 @@ public class drawer extends AppCompatActivity {
         }
         else{
             mobileLayoutArrayList=databasehelper.getMobileListData();
-
-
         }
         Log.e("TAG", "onCreate:modules.size(): " + modules.size());
         navigationView.setNavigationItemSelectedListener(item -> {
@@ -146,9 +144,7 @@ public class drawer extends AppCompatActivity {
             selectDrawerItem(item);
             return true;
         });
-
         toolbar.setNavigationIcon(R.drawable.ic_baseline_dehaze_24);
-
     }
 
 

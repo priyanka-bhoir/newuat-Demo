@@ -149,20 +149,20 @@ public class AccountFragment extends Fragment {
 
         Log.e(TAG, "ReqestModule:moduleUrl: " + moduleUrl);
         progressDialog.setVisibility(View.VISIBLE);
+            imageView.setVisibility(View.INVISIBLE);
         JsonObjectRequest objectRequest = new JsonObjectRequest(Request.Method.POST, moduleUrl, null, new Response.Listener<JSONObject>() {
             private String TAG = "fragment";
             JSONArray jsonArray;
             String s = null;
-
             @Override
             public void onResponse(JSONObject response) {
                 Log.e(TAG, "onResponse: " + response);
                 try {
-                    try {
-                        s = response.getString("error_message");
-                    } catch (Exception e) {
-                        Log.e(TAG, "onResponse: " + e);
-                    }
+                    s = response.getString("error_message");
+                }catch (Exception e){
+                    Log.e(TAG, "onResponse: "+e );
+                }
+                try {
                     jsonArray = response.getJSONArray("data");
                     Log.e(TAG, "onResponse:data " + jsonArray);
                     JSONObject jsonObject = response.getJSONObject("links");
@@ -196,24 +196,25 @@ public class AccountFragment extends Fragment {
                     Log.e(TAG, "onResponse:nexturl: " + nexturl);
                     to = jsonObject1.getString("to");
                     textView.setText(to + "/" + total);
-
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                Log.e(TAG, "onResponse: from:" + from);
-                recyclerView.smoothScrollToPosition(Integer.parseInt(from));
-                if (s != null) {
-                    Toast.makeText(context, "no data found", Toast.LENGTH_SHORT).show();
-                    Log.e(TAG, "onResponse: " + s);
-                    recyclerView.setVisibility(View.INVISIBLE);
+                    Log.e(TAG, "onResponse: from:" + from);
+                    recyclerView.smoothScrollToPosition(Integer.parseInt(from));
+                    if (s != null) {
+                        Toast.makeText(context, "no data found", Toast.LENGTH_SHORT).show();
+                        Log.e(TAG, "onResponse: " + s);
+                        recyclerView.setVisibility(View.INVISIBLE);
+                        imageView.setVisibility(View.VISIBLE);
+                    } else if (jsonArray.length() > 0) {
+                        Log.e(TAG, "onResponse: to==> " + to);
+                        adapter = new Adapter(context, 20, map, mParam1, getActivity());
+                        imageView.setVisibility(View.INVISIBLE);
+                        recyclerView.setVisibility(View.VISIBLE);
+                        recyclerView.setAdapter(adapter);
+                        Log.e(TAG, "onCreateView:size of list " + map.size());
+                        progressDialog.setVisibility(View.INVISIBLE);
+                    }
+                } catch (Exception e) {
+                    Log.e(TAG, "onResponse: " + e);
                     imageView.setVisibility(View.VISIBLE);
-                } else if (jsonArray.length() > 0) {
-                    Log.e(TAG, "onResponse: to==> " + to);
-                    adapter = new Adapter(context, 20, map, mParam1, getActivity());
-                    imageView.setVisibility(View.INVISIBLE);
-                    recyclerView.setVisibility(View.VISIBLE);
-                    recyclerView.setAdapter(adapter);
-                    Log.e(TAG, "onCreateView:size of list " + map.size());
                     progressDialog.setVisibility(View.INVISIBLE);
                 }
             }

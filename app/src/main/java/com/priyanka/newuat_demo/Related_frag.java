@@ -8,6 +8,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import org.json.JSONObject;
+
 /**
  * A simple {@link Fragment} subclass.
  * Use the {@link Related_frag#newInstance} factory method to
@@ -21,15 +23,17 @@ public class Related_frag extends Fragment {
     private static final String ARG_PARAM2 = "param2";
     private static String id;
     private static String module;
+    private static JSONObject object;
 
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
 
-    public Related_frag(String id, String module) {
+    public Related_frag(String id, String module, JSONObject object) {
         // Required empty public constructor
         this.id=id;
         this.module=module;
+        this.object=object;
     }
 
     /**
@@ -43,7 +47,7 @@ public class Related_frag extends Fragment {
     // TODO: Rename and change types and number of parameters
     public static Related_frag newInstance(String param1, String param2) {
 
-        Related_frag fragment = new Related_frag(id, module);
+        Related_frag fragment = new Related_frag(id, module, object);
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, param1);
         args.putString(ARG_PARAM2, param2);

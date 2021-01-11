@@ -92,7 +92,7 @@ public class Adapter extends ArrayAdapter<HashMap<String, String>> implements Ac
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
         LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
         convertView = layoutInflater.inflate(R.layout.recycler_holder, parent, false);
-        Log.e(TAG, "getView: ==> Layout created");
+//        Log.e(TAG, "getView: ==> Layout created");
         ItemViewHolder viewHolder = new ItemViewHolder(convertView);
 
         databasehelper = new Databasehelper(context);

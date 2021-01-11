@@ -54,7 +54,7 @@ public class Detailsadapter extends ArrayAdapter<ArrayList<String>>{
     ArrayList<String> values;
     String module;
     Databasehelper db;
-    Details_frag.NameValue nameValue;
+//    Details_frag.NameValue nameValue;
     String value;
     int maxliens;
 
@@ -78,7 +78,7 @@ public class Detailsadapter extends ArrayAdapter<ArrayList<String>>{
     @NonNull
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-        Log.e(TAG, "getView: ");
+//        Log.e(TAG, "getView: ");
         LayoutInflater layoutInflater=LayoutInflater.from(getContext());
         convertView=layoutInflater.inflate(R.layout.details_list_holder,parent,false);
         ItemViewHlder viewHlder=new ItemViewHlder(convertView);
@@ -222,7 +222,7 @@ public class Detailsadapter extends ArrayAdapter<ArrayList<String>>{
 
     // this function is for read more feature
     public static void makeTextViewResizable(final TextView tv, final int maxLine, final String expandText, final boolean viewMore) {
-        Log.e(TAG, "makeTextViewResizable:  i am called" +tv.getText());
+//        Log.e(TAG, "makeTextViewResizable:  i am called" +tv.getText());
 
         if (tv.getTag() == null) {
             tv.setTag(tv.getText());

@@ -106,7 +106,7 @@ public class Detail extends AppCompatActivity {
     ListView listView;
     Detailsadapter adapter;
     Adapter adapter1;
-    Details_frag.NameValue nameValue;
+//    Details_frag.NameValue nameValue;
     HashMap hashMap;
     RequestQueue queue;
     AlertDialog dialog1;
@@ -120,7 +120,7 @@ public class Detail extends AppCompatActivity {
 
     private final List<Fragment> fragments = new ArrayList<>();
     private final List<String> fragmentTitle = new ArrayList<>();
-    private String errormessage;
+    private String errormessage=null;
     private String displayname,companyname,displayaddress;
     private Object Activity;
 
@@ -163,7 +163,13 @@ public class Detail extends AppCompatActivity {
         name_txt = findViewById(R.id.card_name_text);
         company_txt = findViewById(R.id.card_compay_text);
         addr_txt = findViewById(R.id.card_address_text);
-        listView=findViewById(R.id.list);
+//        listView=findViewById(R.id.list);
+
+
+//        addr_img.setTag(R.id.name,"");
+//        addr_img.setTag(R.id.module,"module");
+//        addr_img.getTag(R.id.name).toString();
+//        addr_img.getTag(R.id.module).toString();
 
         progressDialog=findViewById(R.id.indeterminateBar);
 
@@ -207,79 +213,71 @@ public class Detail extends AppCompatActivity {
     }
 
     private void detailtabrequest(String url) {
-        Log.e(TAG, "detailtabrequest:auth--> " + auth);
-        Log.e(TAG, "detailtabrequest: " + url);
+//        Log.e(TAG, "detailtabrequest:auth--> " + auth);
+//        Log.e(TAG, "detailtabrequest: " + url);
         progressDialog.setVisibility(View.VISIBLE);
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, url, null, response -> {
             JSONObject name_value_list = null;
 //            JSONObject multi_fields = null;
-
             try {
-                try {
-                    errormessage = response.getString("error_message");
-                } catch (Exception e) {
-                    Log.e(TAG, "onResponse: " + e);
+                errormessage = response.getString("error_message");
+                if (response.getString("status").equals("200")&& errormessage.equals(null)){
+                    Log.e(TAG, "detailtabrequest: ");
                 }
-                Log.e(TAG, "detailtabrequest:response--> " + response);
-                JSONObject object = response.getJSONObject("entry_list");
-                String modulename = object.getString("module_name");
-                name_value_list = object.getJSONObject("name_value_list");
-                JSONArray relationship_list = object.getJSONArray("relationship_list");
-                multi_fields = object.getJSONObject("multi_fields");
-                Log.e(TAG, "detailtabrequest:name_value_list==> " + name_value_list);
-                // here the progress bar got invisible when toy get requellst
+            } catch (Exception e) {
+                Log.e(TAG, "onResponse: " + e);
+            }try {
                 progressDialog.setVisibility(View.INVISIBLE);
-                ArrayList<String> keyList = new ArrayList<>();
-                ArrayList<String> Valuelist=new ArrayList<>();
-                Iterator<String> keys=name_value_list.keys();
-                hashMap=new HashMap();
-                while (keys.hasNext()){
-                    keyList.add(keys.next());
-                }
-                Log.e(TAG, "detailtabrequest: "+keyList);
-                Log.e(TAG, "detailtabrequest: "+name_value_list.length() );
-
-                String key= null;
-                for (int i = 0; i < name_value_list.length(); i++) {
-                    JSONObject jsonObject=name_value_list.getJSONObject(keyList.get(i));
-                    key=getDisplayNames(jsonObject.getString("name"));
-                    Log.e(TAG, "detailtabrequest: hey  here ve are fetching names "+jsonObject.getString("name")+":"+key );
-//                    Log.e(TAG, "I am your key i came form databsed=>"+key );
-                    switch (jsonObject.getString("name")){
-                        case "id":
-                            Log.e(TAG, "I am your id"+jsonObject.getString("name"));
-                            id=jsonObject.getString("value");
-                            break;
-                        case "isfavorite":
-                            String s=jsonObject.getString("value");
-                            if (s.equals("true")){
-                                favroite_img.setImageResource(R.drawable.ic_baseline_star_24);
-                            }
-                            break;
-                        case "null":
-                            Log.e(TAG, "detailtabrequest:this is the null break " );
-                            break;
-                        case "account_id":
-                            hashMap.put("Member of",jsonObject.getString("value"));
-                            break;
-                        case "assigned_user_id_name":
-                            Log.e(TAG, "detailtabrequest: i am Assigned to" );
-                            hashMap.put("Assigned To",jsonObject.getString("value"));
-                            break;
-                        default:
-                            Log.e(TAG, "detailtabrequest: Switch default case called" );
-                            if (key!=null){
-                                hashMap.put(key,jsonObject.getString("value"));
-                            }
-                    }
-//                    Log.e(TAG, "detailtabrequest:hashMap==> "+hashMap );
-//                    Valuelist.add(jsonObject.getString("value"));
-                }
-                Log.e(TAG, "detailtabrequest:this is the size of map====>"+ hashMap.size());
-                Log.e(TAG, "detailtabrequest:this is the map====>"+ hashMap);
+                JSONObject object = response.getJSONObject("entry_list");
+                //view pager
+                viewPagerAdapter=new ViewPagerAdapter(getSupportFragmentManager(),1,module,id,object);
+                viewPager.setAdapter(viewPagerAdapter);
+                viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
             } catch (JSONException e) {
                 e.printStackTrace();
             }
+//                Log.e(TAG, "detailtabrequest:response--> " + response);
+//
+//                String key= null;
+//                for (int i = 0; i < name_value_list.length(); i++) {
+//                    JSONObject jsonObject=name_value_list.getJSONObject(keyList.get(i));
+//                    key=getDisplayNames(jsonObject.getString("name"));
+////                    Log.e(TAG, "detailtabrequest: hey  here ve are fetching names "+jsonObject.getString("name")+":"+key );
+////                    Log.e(TAG, "I am your key i came form databsed=>"+key );
+//                    switch (jsonObject.getString("name")){
+//                        case "id":
+//                            Log.e(TAG, "I am your id"+jsonObject.getString("name"));
+//                            id=jsonObject.getString("value");
+//                            break;
+//                        case "isfavorite":
+//                            String s=jsonObject.getString("value");
+//                            if (s.equals("true")){
+//                                favroite_img.setImageResource(R.drawable.ic_baseline_star_24);
+//                            }
+////                        case ""
+//                        case "null":
+//                            Log.e(TAG, "detailtabrequest:this is the null break:"+ key);
+//                            break;
+//                        case "account_id_name":
+//                            Log.e(TAG, "detailtabrequest: I am Member of:"+jsonObject.get("value"));
+//                            hashMap.put("Member of",jsonObject.getString("value"));
+//                            break;
+//                        case "assigned_user_id_name":
+//                            Log.e(TAG, "detailtabrequest: i am Assigned to" );
+//                            hashMap.put("Assigned To",jsonObject.getString("value"));
+//                            break;
+//
+//                        default:
+//                            if (key!=null){
+//                                Log.e(TAG, "detailtabrequest: Switch default case called:"+key+":"+jsonObject.getString("value"));
+//                                hashMap.put(key,jsonObject.getString("value"));
+//                            }
+//                    }
+////                    Log.e(TAG, "detailtabrequest:hashMap==> "+hashMap );
+////                    Valuelist.add(jsonObject.getString("value"));
+//                }
+//                Log.e(TAG, "detailtabrequest:this is the size of map====>"+ hashMap.size());
+//                Log.e(TAG, "detailtabrequest:this is the map====>"+ hashMap);
 
 //            if (errormessage!=null){
 //                Toast.makeText(context, "no data found", Toast.LENGTH_SHORT).show();
@@ -289,68 +287,65 @@ public class Detail extends AppCompatActivity {
 //            else if (name_value_list.length()>0){
 
             //for number
-            arrayListnumbers=new ArrayList<>();
-            arrayListnumbers=fetchMultiValued("hiddenPhone",arrayListnumbers,"phone_number");
-            Log.e(TAG, "detailtabrequest:arrayListnumbers==> "+arrayListnumbers );
-            //this is for Email storing in array list
-            arrayListEmail=new ArrayList<>();
-            arrayListEmail=fetchMultiValued("hiddenEmail",arrayListEmail,"email_address");
-            Log.e(TAG, "detailtabrequest:arrayListEmail==> "+arrayListEmail );
-//            this is for Address
-            arrayListaddress=new ArrayList<>();
-            arrayListaddress=fetchAddress("hiddenAddress",arrayListaddress);
-            Log.e(TAG, "detailtabrequest: "+arrayListaddress );
+//            arrayListnumbers=new ArrayList<>();
+//            arrayListnumbers=fetchMultiValued("hiddenPhone",arrayListnumbers,"phone_number");
+//            Log.e(TAG, "detailtabrequest:arrayListnumbers==> "+arrayListnumbers );
+//            //this is for Email storing in array list
+//            arrayListEmail=new ArrayList<>();
+//            arrayListEmail=fetchMultiValued("hiddenEmail",arrayListEmail,"email_address");
+//            Log.e(TAG, "detailtabrequest:arrayListEmail==> "+arrayListEmail );
+////            this is for Address
+//            arrayListaddress=new ArrayList<>();
+//            arrayListaddress=fetchAddress("hiddenAddress",arrayListaddress);
+//            Log.e(TAG, "detailtabrequest: "+arrayListaddress );
+//
+//
+//            Log.e(TAG, "hashmap keyset=: "+hashMap.keySet() );
+//            Log.e(TAG, "hashmap valueset=: "+hashMap.values() );
+//            Set<String> keySet = hashMap.keySet();
+//            ArrayList<String> listOfKeys = new ArrayList<String>(keySet);
+//            Collection<String> value=  hashMap.values();
+//            ArrayList<String> listOfValues = new ArrayList<String>(value);
+//
+//            for(int i=0;i<listOfKeys.size();i++){
+//                Log.e(TAG, "==>key:"+listOfKeys.get(i)+" value:"+listOfValues.get(i));
+//                if (listOfKeys.get(i).equals("Name")){
+//                    displayname=listOfValues.get(i);
+//                }
+//                if (listOfKeys.get(i).equals("Industry")){
+//                    companyname=listOfValues.get(i);
+//                }
+//                if (listOfKeys.get(i).equals("Email")){
+//                    if (!arrayListEmail.isEmpty()){
+//                        email=listOfValues.get(i);
+//                        String s=arrayListEmail.get(0);
+//                        listOfValues.set(i,s);
+//                    }
+//                }
+//                if (listOfKeys.get(i).equals("Phone")){
+//                    if (!arrayListnumbers.isEmpty()){
+//                        String s=arrayListnumbers.get(0);
+//                        number=listOfValues.get(i);
+//                        listOfValues.set(i,s);
+//                    }
+//                }
+//                if (listOfKeys.get(i).equals("Address")){
+//                    displayaddress="";
+//                    if (!arrayListaddress.isEmpty()){
+//                        String s=arrayListaddress.get(0);
+//                        displayaddress=s;
+//                        listOfValues.set(i,s);
+//                        Log.e(TAG, "detailtabrequest: this is address==>"+s );
+//                    }
+//                }if (listOfKeys.get(i).equals("Website")){
+//                    Website=listOfValues.get(i);
+//                }
+//            }
+//            name_txt.setText((!displayname.isEmpty())?displayname : "");
+//            company_txt.setText((!companyname.isEmpty())?companyname : "");
+//            addr_txt.setText((!displayaddress.isEmpty())?displayaddress:"");
 
 
-            Log.e(TAG, "hashmap keyset=: "+hashMap.keySet() );
-            Log.e(TAG, "hashmap valueset=: "+hashMap.values() );
-            Set<String> keySet = hashMap.keySet();
-            ArrayList<String> listOfKeys = new ArrayList<String>(keySet);
-            Collection<String> value=  hashMap.values();
-            ArrayList<String> listOfValues = new ArrayList<String>(value);
-
-            for(int i=0;i<listOfKeys.size();i++){
-                Log.e(TAG, "==>key:"+listOfKeys.get(i)+" value:"+listOfValues.get(i));
-                if (listOfKeys.get(i).equals("Name")){
-                    displayname=listOfValues.get(i);
-                }
-                if (listOfKeys.get(i).equals("Industry")){
-                    companyname=listOfValues.get(i);
-                }
-                if (listOfKeys.get(i).equals("Email")){
-                    if (!arrayListEmail.isEmpty()){
-                        email=listOfValues.get(i);
-                        String s=arrayListEmail.get(0);
-                        listOfValues.set(i,s);
-                    }
-                }
-                if (listOfKeys.get(i).equals("Phone")){
-                    if (!arrayListnumbers.isEmpty()){
-                        String s=arrayListnumbers.get(0);
-                        number=listOfValues.get(i);
-                        listOfValues.set(i,s);
-                    }
-                }
-                if (listOfKeys.get(i).equals("Address")){
-                    displayaddress="";
-                    if (!arrayListaddress.isEmpty()){
-                        String s=arrayListaddress.get(0);
-                        displayaddress=s;
-                        listOfValues.set(i,s);
-                        Log.e(TAG, "detailtabrequest: this is address==>"+s );
-                    }
-                }if (listOfKeys.get(i).equals("Website")){
-                    Website=listOfValues.get(i);
-                }
-            }
-            name_txt.setText((!displayname.isEmpty())?displayname : "");
-            company_txt.setText((!companyname.isEmpty())?companyname : "");
-            addr_txt.setText((!displayaddress.isEmpty())?displayaddress:"");
-
-            //view pager
-            viewPagerAdapter=new ViewPagerAdapter(getSupportFragmentManager(),1,listOfKeys,listOfValues,module);
-            viewPager.setAdapter(viewPagerAdapter);
-            viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
 
 
 
@@ -475,7 +470,7 @@ public class Detail extends AppCompatActivity {
             });
 
 //                listView.setVisibility(View.VISIBLE);
-            Log.e(TAG, "onCreateView:size of list " + listOfKeys.size()+"values size>>"+listOfValues.size());
+//            Log.e(TAG, "onCreateView:size of list " + listOfKeys.size()+"values size>>"+listOfValues.size());
 //            }
         }, error -> {
             Log.e(TAG, "detailtabrequest:error " + error);
@@ -803,20 +798,7 @@ public class Detail extends AppCompatActivity {
         }
         return arrayListaddress;
     }
-    private ArrayList<String> fetchMultiValued(String s,ArrayList<String> arrayList,String valetoadd){
-        try {
-            JSONArray array= (JSONArray) multi_fields.get(s);
-            for (int i=0;i<array.length();i++) {
-                JSONObject object = array.getJSONObject(i);
-                Log.e(TAG, "detailtabrequest:json object in for loop==> "+object+"||===>"+ object.get(valetoadd) );
-                arrayList.add(object.getString(valetoadd));
-            }
-            Log.e(TAG, "onClick:hiddenPhone "+array );
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        return arrayList;
-    }
+
     private void relatetabreqest(String url) {
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, url, null, response -> {
 

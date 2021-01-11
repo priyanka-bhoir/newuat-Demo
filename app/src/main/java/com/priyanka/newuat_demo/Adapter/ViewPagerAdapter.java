@@ -10,9 +10,12 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 
+import com.google.gson.JsonObject;
 import com.priyanka.newuat_demo.Related_frag;
 import com.priyanka.newuat_demo.fragment.AccountFragment;
 import com.priyanka.newuat_demo.fragment.Details_frag;
+
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 
@@ -23,20 +26,23 @@ public class ViewPagerAdapter extends FragmentPagerAdapter {
     ArrayList<String> listOfKeys;
     ArrayList<String> listOfValues;
     private final String[] tabTitles = new String[]{"DETAILS", "RELATED"};
+    JSONObject object;
 
-    public ViewPagerAdapter(@NonNull FragmentManager fm, int behavior, Detailsadapter detailsadapter) {
+    public ViewPagerAdapter(@NonNull FragmentManager fm, int behavior, String module, String id, JSONObject object) {
         super(fm, behavior);
+        Log.e(TAG, "ViewPagerAdapter: called " );
         this.id=id;
         this.module=module;
+        this.object=object;
 //        Log.e(TAG, "ViewPagerAdapter: "+"viewpager created" +id+"||==>"+module);
     }
 
-    public ViewPagerAdapter(FragmentManager supportFragmentManager, int i, ArrayList<String> listOfKeys, ArrayList<String> listOfValues, String module) {
-        super(supportFragmentManager, i);
-        this.listOfKeys=listOfKeys;
-        this.listOfValues=listOfValues;
-        this.module=module;
-    }
+//    public ViewPagerAdapter(FragmentManager supportFragmentManager, int i, ArrayList<String> listOfKeys, ArrayList<String> listOfValues, String module) {
+//        super(supportFragmentManager, i);
+//        this.listOfKeys=listOfKeys;
+//        this.listOfValues=listOfValues;
+//        this.module=module;
+//    }
 
     @NonNull
     @Override
@@ -44,11 +50,11 @@ public class ViewPagerAdapter extends FragmentPagerAdapter {
         Fragment fragment = null;
         if (position == 0)
         {
-            fragment = new Details_frag(listOfKeys,listOfValues,module);
+            fragment = new Details_frag(module,id,object);
         }
         else if (position == 1)
         {
-            fragment = new Related_frag(id,module);
+            fragment = new Related_frag(id,module,object);
         }
         return fragment;
     }
