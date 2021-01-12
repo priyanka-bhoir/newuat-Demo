@@ -51,6 +51,7 @@ import com.priyanka.newuat_demo.Adapter.Adapter;
 import com.priyanka.newuat_demo.Database.Databasehelper;
 import com.priyanka.newuat_demo.MainActivity;
 import com.priyanka.newuat_demo.Models.GetEntry;
+import com.priyanka.newuat_demo.Models.TeamData;
 import com.priyanka.newuat_demo.R;
 import com.priyanka.newuat_demo.SharedPrefrence;
 import com.priyanka.newuat_demo.drawer;
@@ -76,7 +77,7 @@ public class AccountFragment extends Fragment {
     private static final String ARG_PARAM2 = "param2";
     Databasehelper databasehelper;
     Context context;
-    JsonObjectRequest request;
+    JsonObjectRequest request,requestteam;
     SharedPrefrence prefrence;
     RequestQueue queue;
     String auth, moduleUrl;
@@ -99,6 +100,7 @@ public class AccountFragment extends Fragment {
     SwipeRefreshLayout swipeRefreshLayout;
     TextView textView;
     ProgressBar progressDialog;
+    TeamData teamData;
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
@@ -145,9 +147,12 @@ public class AccountFragment extends Fragment {
 
     }
 
-    private Object ReqestModule(String moduleUrl, String auth) {
+    private Object ReqestModule(String moduleUrl, String auth,String mParam2) {
 
         Log.e(TAG, "ReqestModule:moduleUrl: " + moduleUrl);
+        Log.e(TAG, "ReqestModule:mParam1 "+mParam1);
+        Log.e(TAG, "ReqestModule: mParam2"+mParam2);
+
         progressDialog.setVisibility(View.VISIBLE);
             imageView.setVisibility(View.INVISIBLE);
         JsonObjectRequest objectRequest = new JsonObjectRequest(Request.Method.POST, moduleUrl, null, new Response.Listener<JSONObject>() {
@@ -161,6 +166,7 @@ public class AccountFragment extends Fragment {
                     s = response.getString("error_message");
                 }catch (Exception e){
                     Log.e(TAG, "onResponse: "+e );
+
                 }
                 try {
                     jsonArray = response.getJSONArray("data");
@@ -169,6 +175,24 @@ public class AccountFragment extends Fragment {
                     Log.e(TAG, "onResponse:links:" + jsonObject);
                     JSONObject jsonObject1 = response.getJSONObject("meta");
                     Log.e(TAG, "onresponse:meta:" + jsonObject1);
+                    if (mParam2.equals("Team")){
+                        JSONObject object;
+                        for (int i=0;i<jsonArray.length();i++){
+                            object=jsonArray.getJSONObject(i);
+//                            Log.e(TAG, "onResponse: TeamData "+object);
+                            String id=object.getString("id");
+                            String created_at=object.getString("created_at");
+                            String updated_at=object.getString("updated_at");
+                            String deleted_at=object.getString("deleted_at");
+                            String name=object.getString("name");
+                            String description=object.getString("description");
+//                            Log.e(TAG, "onResponse: TEAMDATA "+id+"name"+name );
+                            teamData=new TeamData(id,created_at,updated_at,deleted_at,name,description);
+                            Log.e(TAG, "onResponse: here we are inserting into team table" );
+                            databasehelper.insertTeamMember(teamData);
+                        }
+                    }
+                    else{
                     ArrayList<String> keyList = new ArrayList<>();
                     JSONObject object;
                     for (int i = 0; i < jsonArray.length(); i++) {
@@ -212,6 +236,7 @@ public class AccountFragment extends Fragment {
                         Log.e(TAG, "onCreateView:size of list " + map.size());
                         progressDialog.setVisibility(View.INVISIBLE);
                     }
+                }
                 } catch (Exception e) {
                     Log.e(TAG, "onResponse: " + e);
                     imageView.setVisibility(View.VISIBLE);
@@ -301,8 +326,11 @@ public class AccountFragment extends Fragment {
         map = new ArrayList<>();
 
         progressDialog=getActivity().findViewById(R.id.indeterminateBarinfrag);
-
-        request = (JsonObjectRequest) ReqestModule(moduleUrl + "1", auth);
+        if (databasehelper.getModule()==false){
+            requestteam= (JsonObjectRequest) ReqestModule(moduleUrl+"",auth,"Team");
+            queue.add(requestteam);
+        }
+        request = (JsonObjectRequest) ReqestModule(moduleUrl + "1", auth,mParam2);
         queue.add(request);
 
 
@@ -317,7 +345,7 @@ public class AccountFragment extends Fragment {
 //                        dialog.dismiss();
                         Snackbar.make(getView(), "this is the end", Snackbar.LENGTH_SHORT).show();
                     } else {
-                        request = (JsonObjectRequest) ReqestModule(nexturl, auth);
+                        request = (JsonObjectRequest) ReqestModule(nexturl, auth,mParam2);
                         queue.add(request);
                     }
                 }
@@ -328,7 +356,7 @@ public class AccountFragment extends Fragment {
                 Log.e(TAG, "onScroll: " + firstVisibleItem + " visibleItemCount: " + visibleItemCount + " totalItemCount:" + totalItemCount);
                 if (firstVisibleItem == 0) {
                     swipeRefreshLayout.setOnRefreshListener(() -> {
-                        request = (JsonObjectRequest) ReqestModule(moduleUrl, auth);
+                        request = (JsonObjectRequest) ReqestModule(moduleUrl, auth,mParam2);
                         queue.add(request);
                         swipeRefreshLayout.setRefreshing(false);
                     });

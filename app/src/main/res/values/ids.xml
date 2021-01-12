@@ -12,4 +12,5 @@
     <item name="delete" type="id" />
     <item name="id" type="id"/>
     <item name="module" type="id"/>
+    <item name="key" type="id"/>
 </resources>

@@ -11,6 +11,7 @@ import androidx.annotation.Nullable;
 
 import com.priyanka.newuat_demo.Models.GetEntry;
 import com.priyanka.newuat_demo.Models.MobileLayout;
+import com.priyanka.newuat_demo.Models.TeamData;
 import com.priyanka.newuat_demo.Models.module_pojo;
 
 import java.util.ArrayList;
@@ -18,7 +19,7 @@ import java.util.ArrayList;
 public class Databasehelper extends SQLiteOpenHelper {
 
     public static final String Database_name="newuat";
-    public static final int version = 8;
+    public static final int version = 11;
     public static final String Table_LOGIN="login";
     public static final String Table_MODULE_LIST="modules";
     public static final String Table_MOBILE_LAYOUT="mobile";
@@ -44,6 +45,7 @@ public class Databasehelper extends SQLiteOpenHelper {
     public static final String ENTRY_META="meta";
 
     // for team table
+    public static final String ID_TEAM="team_id";
     public static final String CREATED_AT="created_at";
     public static final String UPDATED_AT="updated_at";
     public static final String DELETED_AT="deleted_at";
@@ -73,10 +75,10 @@ public class Databasehelper extends SQLiteOpenHelper {
         db.execSQL("create table "+ Table_MOBILE_LAYOUT+"("+ID+" integer primary key, "+MODULE_NAME+" text, "+MODULE_LABEL+" text,"+LAYOUT_DEFS+" text,"+FIELDDEFS+" text)");
 
         //for getEntry
-        db.execSQL("create table "+Table_GETENTRY_LIST+"("+ID+" integer primary key,"+MODULENAME+" text, "+ENTRY_DATA+" text,"+ENTRY_LINK+" text,"+ENTRY_META+" text)");
+        db.execSQL("create table "+Table_GETENTRY_LIST+"("+ID+" integer primary key, "+MODULENAME+" text, "+ENTRY_DATA+" text,"+ENTRY_LINK+" text,"+ENTRY_META+" text)");
 
         // this is for Team
-//        db.execSQL("create tale team"+Table_TEAM+"("+ID+" integer primary key,"+CREATED_AT+" text,"+UPDATED_AT+" text,"+DELETED_AT+" text,"+NAME+" text,""+)");
+        db.execSQL("create table "+Table_TEAM+"("+ID+" integer primary key, "+ID_TEAM+" text,"+CREATED_AT+" text,"+UPDATED_AT+" text,"+DELETED_AT+" text,"+NAME+" text,"+DESCRIPTION+" text)");
 
     }
 
@@ -86,6 +88,7 @@ public class Databasehelper extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS "+Table_MODULE_LIST);
         db.execSQL("DROP TABLE IF EXISTS "+Table_MOBILE_LAYOUT);
         db.execSQL("DROP TABLE IF EXISTS "+Table_GETENTRY_LIST);
+        db.execSQL("DROP TABLE IF EXISTS "+Table_TEAM);
         onCreate(db);
     }
 
@@ -123,6 +126,20 @@ public class Databasehelper extends SQLiteOpenHelper {
         SQLiteDatabase db=this.getWritableDatabase();
         db.insert(Table_MOBILE_LAYOUT,null,values);
         Log.e(TAG, "insertMobileLayout: Data inserted" );
+    }
+
+    public void insertTeamMember(TeamData teamData){
+        ContentValues values=new ContentValues();
+        values.put(ID_TEAM,teamData
+                .getId());
+        values.put(CREATED_AT,teamData.getCreated_at());
+        values.put(UPDATED_AT,teamData.getUpdated_at());
+        values.put(DELETED_AT,teamData.getDeleted_at());
+        values.put(NAME,teamData.getName());
+        values.put(DESCRIPTION,teamData.getDescription());
+        SQLiteDatabase db=this.getWritableDatabase();
+        db.insert(Table_TEAM,null,values);
+        Log.e(TAG, "insertTeamMember: Data inserted" );
     }
 
     public void insertGetEntryList(GetEntry getEntry){
@@ -291,4 +308,18 @@ public class Databasehelper extends SQLiteOpenHelper {
         return getdefs(modulename,FIELDDEFS);
     }
 
+    public String fetchTeamName(String value) {
+        String abc="";
+        SQLiteDatabase db=getReadableDatabase();
+        Log.e(TAG, "fetchTeamName: "+value);
+        String selection = ID_TEAM+ "=?" ;
+        Cursor cursor=db.query(Table_TEAM,new String[]{NAME},selection,new String[]{value},null,null,null);
+        if (cursor!=null){
+            cursor.moveToFirst();
+            abc=cursor.getString(0);
+            Log.e(TAG, "getlayoutdefs:cursor "+cursor.getString(0));
+        }
+        Log.e(TAG, "fetchTeamName: "+abc );
+        return abc;
+    }
 }

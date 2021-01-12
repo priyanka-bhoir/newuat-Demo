@@ -496,7 +496,7 @@ public class Detail extends AppCompatActivity {
                     object1.put("action", "show");
                     object1.put("module_name", mParam2);
                     object1.put("id", id);
-                    object1.put("select_fields", selectedfileds(module));
+                    object1.put("select_fields", selectedfileds(module,databasehelper));
                     object1.put("select_relate_fields", new JSONArray());
                     object.put("rest_data", object1);
                     Log.e(TAG, "getBody: ody of request " + object);
@@ -759,7 +759,7 @@ public class Detail extends AppCompatActivity {
         dialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(false);
     }
 
-    private JSONArray selectedfileds(String module) {
+    public JSONArray selectedfileds(String module,Databasehelper databasehelper) {
         String s;
         s = databasehelper.getlayoutdefs(module);
         JSONArray jsonArray = null;

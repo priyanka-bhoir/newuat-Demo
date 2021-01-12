@@ -9,6 +9,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#ffff"
     android:id="@+id/account_frag_linear_layout"
     tools:context=".fragment.AccountFragment"
     android:orientation="vertical">

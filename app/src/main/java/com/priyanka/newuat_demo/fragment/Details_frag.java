@@ -21,6 +21,7 @@ import android.widget.TextView;
 import com.android.volley.RequestQueue;
 import com.priyanka.newuat_demo.Adapter.Detailsadapter;
 import com.priyanka.newuat_demo.Database.Databasehelper;
+import com.priyanka.newuat_demo.Detail;
 import com.priyanka.newuat_demo.R;
 import com.priyanka.newuat_demo.SharedPrefrence;
 import com.priyanka.newuat_demo.singletone.variables;
@@ -72,8 +73,10 @@ public class Details_frag extends Fragment {
     JSONObject multi_fields = null;
     JSONObject jsonObject;
     TextView textView,textView1;
-    LinearLayout.LayoutParams params,params1;
+    LinearLayout.LayoutParams params,params1,params2;
     ArrayList<String> arrayListnumbers,arrayListEmail,arrayListaddress;
+    JSONArray details;
+    Detail d;
 
 
 
@@ -105,11 +108,12 @@ public class Details_frag extends Fragment {
             url=prefrence.getURl();
             auth=variables.BEARER+prefrence.getToken();
             Log.e(TAG, "onCreate: of details_frag---> "+url );
-
+        d=new Detail();
         params = new LinearLayout.LayoutParams(150, ActionBar.LayoutParams.MATCH_PARENT);
         params.setMargins(30,20,30,20);
 
-
+        details= d.selectedfileds(module,databasehelper);
+        Log.e(TAG, "onCreate: details:"+details );
         params1 = new LinearLayout.LayoutParams(ActionBar.LayoutParams.MATCH_PARENT,ActionBar.LayoutParams.MATCH_PARENT);
         params1.setMargins(30,20,30,20);
     }
@@ -121,6 +125,12 @@ public class Details_frag extends Fragment {
 //        detailtabrequest(url+variables.version+variables.URL_DETAIL);
         linearLayout=view.findViewById(R.id.account_frag_linear_layout);
         LinearLayoutManager layoutManager = new LinearLayoutManager(context);
+
+        // Here we are creating the layout of fragmnent create the structure
+
+        createLayout();
+
+
         JSONObject name_value_list = null;
         try {
             String modulename = object.getString("module_name");
@@ -138,72 +148,35 @@ public class Details_frag extends Fragment {
 
             String key= null;
             try {
+                Log.e(TAG, "onCreateView:this is field form db:"+details );
                 for (int i=0;i<name_value_list.length();i++) {
                     jsonObject = name_value_list.getJSONObject(keyList.get(i));
-                    key=getDisplayNames(jsonObject.optString("name"),"display_label");
-                    if (key!=(null)){
-                        String typr=getDisplayNames(jsonObject.getString("name"),"type");
-                        Log.e(TAG, "onCreateView: this is my type:"+typr);
-                        switch(typr){
-                            case "text":
-                                LinearLayout linearLayout1=new LinearLayout(getContext());
-                                textView=new TextView(getContext());
-                                textView.setLayoutParams(params);
-                                textView.setText(key);
-                                textView.setGravity(Gravity.CENTER);
-                                textView1=new TextView(getContext());
-                                textView1.setLayoutParams(params1);
-                                textView1.setText(jsonObject.getString("value"));
-                                textView1.setGravity(Gravity.CENTER);
-                                linearLayout1.addView(textView);
-                                linearLayout1.addView(textView1);
-                                linearLayout.addView(linearLayout1);
-                               break;
-                            case "relate":
-                                linearLayout1=new LinearLayout(getContext());
-                                textView=new TextView(getContext());
-                                textView.setLayoutParams(params);
-                                textView.setText(key);
-                                textView.setGravity(Gravity.CENTER);
-                                textView1=new TextView(getContext());
-                                textView1.setLayoutParams(params1);
-                                textView1.setText(jsonObject.getString("value"));
-                                textView1.setGravity(Gravity.CENTER);
-                                textView1.setTag(R.id.id,id);
-                                textView1.setTag(R.id.module,module);
-                                linearLayout1.addView(textView);
-                                linearLayout1.addView(textView1);
-                                linearLayout.addView(linearLayout1);
-                                break;
-                            case "multi-phone":
-                                Multifields("hiddenPhone","phone_number",key,Linkify.PHONE_NUMBERS);
-                                break;
-                            case "multi-email":
-                                Multifields("hiddenEmail","email_address",key, Linkify.EMAIL_ADDRESSES);
-                                break;
-                            case "select":
-                                break;
-                            case "url":
-                                break;
-                            case "textarea":
-                                break;
-                            case "comment":
-                                break;
-                            case "multi-address":
-                                arrayListaddress=new ArrayList<>();
-                                arrayListaddress=fetchAddress("hiddenAddress",arrayListaddress);
-                                MultiFieldAddressLayout(key,arrayListaddress);
-                                break;
-                            case "multi-tag":
-                                break;
-                            case "datetime":
-                                break;
-                            default:
-
+                    Log.e(TAG, "onCreateView: "+jsonObject.getString("name"));
+                    Log.e(TAG, "onCreateView:linearLayout.getChildCount()"+linearLayout.getChildCount());
+                    for (int j=0;j<linearLayout.getChildCount();j++){
+//                        Log.e(TAG, "onCreateView: "+linearLayout.getChildAt(j) );
+                        if (linearLayout.getChildAt(j) instanceof LinearLayout){
+                            LinearLayout linearLayoutVertical = (LinearLayout) linearLayout.getChildAt(j);
+                            for (int k=0;k<linearLayoutVertical.getChildCount();k++){
+                                if (linearLayoutVertical.getChildAt(k) instanceof TextView ) {
+                                    TextView textView = (TextView) linearLayoutVertical.getChildAt(k);
+                                    try {
+                                        if (textView.getTag(R.id.key).toString().equals(""))
+                                        {
+                                            textView.setText(jsonObject.getString("value"));
+                                        }
+                                    } catch (JSONException e) {
+                                        e.printStackTrace();
+                                    }
+                                    Log.e(TAG, "onCreateView: textview"+textView.getText().toString()+" tag=>"+textView.getTag(R.id.key));
+                                }
+//                                if (li)
+                            }
                         }
                     }
+                    }
                     Log.e(TAG, "key:"+key+":"+jsonObject.getString("value"));
-                }
+//                }
 
             } catch (JSONException e) {
             e.printStackTrace();
@@ -218,25 +191,216 @@ public class Details_frag extends Fragment {
 
     }
 
+    private void createLayout(){
+       String key=null;
+        for(int i=0;i<details.length();i++){
+            try {
+                key=getDisplayNames(details.getString(i),"display_label");
+                if (key!=null){
+                    String typr=getDisplayNames(details.getString(i),"type");
+
+                    switch(typr){
+                        case "text":
+                            // here 1 layout that contain two textviews
+//                            LinearLayout linearLayout2 = new LinearLayout(getContext());
+//                            linearLayout2.setOrientation(LinearLayout.VERTICAL);
+//                            Log.e(TAG, "createLayout:key "+key);
+                            LinearLayout linearLayout1 = new LinearLayout(getContext());
+                            linearLayout1.setOrientation(LinearLayout.HORIZONTAL);
+                            textView=new TextView(getContext());
+                            textView.setLayoutParams(params);
+                            textView.setText(key);
+                            textView.setGravity(Gravity.CENTER);
+                            textView1=new TextView(getContext());
+                            textView1.setLayoutParams(params1);
+//                            textView1.setText(jsonObject.getString("value"));
+                            textView1.setGravity(Gravity.CENTER);
+                            textView1.setTag(R.id.key,details.getString(i));
+                            linearLayout1.addView(textView);
+                            linearLayout1.addView(textView1);
+                            linearLayout.addView(linearLayout1);
+                            break;
+                        case "relate":
+                            LinearLayout linearLayout2 = new LinearLayout(getContext());
+                            linearLayout2.setOrientation(LinearLayout.VERTICAL);
+                            linearLayout1 = new LinearLayout(getContext());
+                            linearLayout1.setOrientation(LinearLayout.HORIZONTAL);
+                            textView=new TextView(getContext());
+                            textView.setLayoutParams(params);
+                            textView.setText(key);
+                            textView.setGravity(Gravity.CENTER);
+                            textView1=new TextView(getContext());
+                            textView1.setLayoutParams(params1);
+                            textView1.setGravity(Gravity.CENTER);
+                            textView1.setTag(R.id.key,details.getString(i));
+                            textView1.setTag(R.id.id,id);
+                            textView1.setTag(R.id.module,module);
+                            //FETCH NAME FORM DATABASE
+//                                String name=databasehelper.fetchTeamName(jsonObject.getString("value"));
+//                                Log.e(TAG, "onCreateView: fetched Name from db"+name );
+//                                textView1.setText(name);
+
+//                            textView1.setText(jsonObject.getString("value"));
+//                                textView1.setOnClickListener();
+                            linearLayout1.addView(textView);
+                            linearLayout1.addView(textView1);
+                            linearLayout.addView(linearLayout1);
+                            break;
+                        case "multi-phone":
+                            Log.e(TAG, "createLayout: "+key );
+                            linearLayout1=new LinearLayout(getContext());
+                            textView=new TextView(getContext());
+                            textView.setText(key);
+                            textView.setGravity(Gravity.CENTER);
+                            textView.setLayoutParams(params);
+                            linearLayout1.addView(textView);
+                            linearLayout2=new LinearLayout(getContext());
+                            linearLayout2.setTag(R.id.key,details.getString(i));
+                            linearLayout2.setLayoutParams(params1);
+                            linearLayout1.addView(linearLayout2);
+                            linearLayout.addView(linearLayout1);
+
+//                            Multifields("hiddenPhone","phone_number",key,Linkify.PHONE_NUMBERS);
+                            break;
+                        case "multi-email":
+                            linearLayout1=new LinearLayout(getContext());
+                            textView=new TextView(getContext());
+                            textView.setText(key);
+                            textView.setLayoutParams(params);
+                            linearLayout1.addView(textView);
+                            linearLayout1.setTag(R.id.key,details.getString(i));
+                            linearLayout2=new LinearLayout(getContext());
+                            linearLayout2.setLayoutParams(params1);
+                            linearLayout1.addView(linearLayout2);
+                            linearLayout.addView(linearLayout1);
+//                            Multifields("hiddenEmail","email_address",key, Linkify.EMAIL_ADDRESSES);
+                            break;
+                        case "select":
+                            linearLayout1=new LinearLayout(getContext());
+                            textView=new TextView(getContext());
+                            textView.setText(key);
+                            textView.setLayoutParams(params);
+                            linearLayout1.addView(textView);
+                            textView1=new TextView(getContext());
+                            textView1.setGravity(Gravity.CENTER);
+                            textView1.setLayoutParams(params1);
+                            linearLayout1.addView(textView1);
+                            linearLayout.addView(linearLayout1);
+                            break;
+                        case "url":
+                            linearLayout1=new LinearLayout(getContext());
+                            textView=new TextView(getContext());
+                            textView.setLayoutParams(params);
+                            textView.setGravity(Gravity.CENTER);
+                            textView.setText(key);
+                            linearLayout1.addView(textView);
+                            textView1=new TextView(getContext());
+                            textView1.setLayoutParams(params1);
+                            textView1.setTag(R.id.key,details.getString(i));
+                            textView1.setGravity(Gravity.CENTER);
+                            Linkify.addLinks(textView1,Linkify.WEB_URLS);
+                            textView1.setMovementMethod(LinkMovementMethod.getInstance());
+//                            textView1.setText(jsonObject.getString("value"));
+                            linearLayout1.addView(textView1);
+                            linearLayout.addView(linearLayout1);
+                            break;
+                        case "textarea":
+                            linearLayout1=new LinearLayout(getContext());
+                            textView=new TextView(getContext());
+                            textView.setText(key);
+                            textView.setLayoutParams(params);
+                            linearLayout1.addView(textView);
+                            linearLayout2=new LinearLayout(getContext());
+                            linearLayout2.setTag(R.id.key,details.getString(i));
+                            linearLayout2.setLayoutParams(params1);
+                            linearLayout1.addView(linearLayout2);
+                            linearLayout.addView(linearLayout1);
+                            break;
+                        case "comment":
+                            linearLayout1=new LinearLayout(getContext());
+                            textView=new TextView(getContext());
+                            textView.setText(key);
+                            textView.setLayoutParams(params);
+                            linearLayout1.addView(textView);
+                            linearLayout2=new LinearLayout(getContext());
+                            linearLayout2.setTag(R.id.key,details.getString(i));
+                            linearLayout2.setLayoutParams(params1);
+                            linearLayout1.addView(linearLayout2);
+                            linearLayout.addView(linearLayout1);
+                            break;
+                        case "multi-address":
+                            linearLayout1=new LinearLayout(getContext());
+                            textView=new TextView(getContext());
+                            textView.setText(key);
+                            textView.setLayoutParams(params);
+                            linearLayout1.addView(textView);
+                            linearLayout2=new LinearLayout(getContext());
+                            linearLayout2.setLayoutParams(params1);
+                            linearLayout2.setTag(R.id.key,details.getString(i));
+                            linearLayout1.addView(linearLayout2);
+                            linearLayout.addView(linearLayout1);
+//                            arrayListaddress=new ArrayList<>();
+//                            arrayListaddress=fetchAddress("hiddenAddress",arrayListaddress);
+//                            Log.e(TAG, "this id multi address field::= "+arrayListaddress );
+//                            MultiFieldAddressLayout(key,arrayListaddress);
+                            break;
+                        case "multi-tag":
+                            linearLayout1=new LinearLayout(getContext());
+                            textView=new TextView(getContext());
+                            textView.setText(key);
+                            textView.setLayoutParams(params);
+                            linearLayout1.addView(textView);
+                            linearLayout2=new LinearLayout(getContext());
+                            linearLayout2.setLayoutParams(params1);
+                            linearLayout2.setTag(R.id.key,details.getString(i));
+                            linearLayout1.addView(linearLayout2);
+                            linearLayout.addView(linearLayout1);
+                            break;
+                        case "datetime":
+                            linearLayout1=new LinearLayout(getContext());
+                            textView=new TextView(getContext());
+                            textView.setText(key);
+                            textView.setLayoutParams(params);
+                            linearLayout1.addView(textView);
+                            textView1=new TextView(getContext());
+                            textView1.setLayoutParams(params1);
+                            textView1.setTag(R.id.key,details.getString(i));
+                            linearLayout1.addView(textView1);
+                            linearLayout.addView(linearLayout1);
+                            break;
+                        default:
+
+                    }
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     private void MultiFieldAddressLayout(String key, ArrayList<String> arrayListaddress) {
         LinearLayout linearLayout1;
         TextView textView2;
         if (arrayListnumbers.size()>0){
             linearLayout1=new LinearLayout(getContext());
+//            linearLayout1.setGravity(Gravity.CENTER);
             textView=new TextView(getContext());
+
             textView.setLayoutParams(params);
             textView.setGravity(Gravity.CENTER);
             textView.setText(key);
             linearLayout1.addView(textView);
             LinearLayout linearLayout2=new LinearLayout(getContext());
             linearLayout2.setOrientation(LinearLayout.VERTICAL);
-            for (int j=0;j<arrayListnumbers.size();j++){
+            linearLayout2.setGravity(Gravity.CENTER);
+            for (int j=0;j<arrayListaddress.size();j++){
                 textView2=new TextView(getContext());
                 Pattern pattern = Pattern.compile(".*", Pattern.DOTALL);
                 Linkify.addLinks(textView2,pattern,"geo:0,0?q=");
                 textView2.setMovementMethod(LinkMovementMethod.getInstance());
+                textView2.setGravity(Gravity.CENTER);
                 textView2.setLayoutParams(params1);
-                textView2.setText(arrayListnumbers.get(j));
+                textView2.setText(arrayListaddress.get(j));
                 linearLayout2.addView(textView2);
             }
             linearLayout1.addView(linearLayout2);
@@ -267,10 +431,10 @@ public class Details_frag extends Fragment {
         }
         return arrayListaddress;
     }
-    void MultiFieldAddLayout(String key,int phoneNumbers,ArrayList<String> arrayListnumbers){
+    void MultiFieldAddLayout(String key,int phoneNumbers,ArrayList<String> arrayList){
         LinearLayout linearLayout1;
         TextView textView2;
-        if (arrayListnumbers.size()>0){
+        if (arrayList.size()>0){
             linearLayout1=new LinearLayout(getContext());
             textView=new TextView(getContext());
             textView.setLayoutParams(params);
@@ -279,12 +443,15 @@ public class Details_frag extends Fragment {
             linearLayout1.addView(textView);
             LinearLayout linearLayout2=new LinearLayout(getContext());
             linearLayout2.setOrientation(LinearLayout.VERTICAL);
-            for (int j=0;j<arrayListnumbers.size();j++){
+            linearLayout2.setGravity(Gravity.CENTER);
+//            params2= new LinearLayout.LayoutParams(ActionBar)
+            for (int j=0;j<arrayList.size();j++){
                 textView2=new TextView(getContext());
+                textView2.setLayoutParams(params1);
+                textView2.setGravity(Gravity.CENTER);
                 Linkify.addLinks(textView2,phoneNumbers);
                 textView2.setMovementMethod(LinkMovementMethod.getInstance());
-                textView2.setLayoutParams(params1);
-                textView2.setText(arrayListnumbers.get(j));
+                textView2.setText(arrayList.get(j));
                 linearLayout2.addView(textView2);
             }
             linearLayout1.addView(linearLayout2);
