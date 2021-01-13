@@ -1,6 +1,9 @@
 package com.priyanka.newuat_demo.fragment;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -8,7 +11,10 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import android.text.Spannable;
+import android.text.SpannableStringBuilder;
 import android.text.method.LinkMovementMethod;
+import android.text.style.ForegroundColorSpan;
 import android.text.util.Linkify;
 import android.util.Log;
 import android.view.Gravity;
@@ -19,6 +25,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.android.volley.RequestQueue;
+import com.borjabravo.readmoretextview.ReadMoreTextView;
 import com.priyanka.newuat_demo.Adapter.Detailsadapter;
 import com.priyanka.newuat_demo.Database.Databasehelper;
 import com.priyanka.newuat_demo.Detail;
@@ -130,7 +137,16 @@ public class Details_frag extends Fragment {
 
         createLayout();
 
+        //this is for adding data
+        fillData();
 
+        return view;
+        // Inflate the layout for this fragment
+
+    }
+
+    @SuppressLint("ResourceAsColor")
+    private void fillData() {
         JSONObject name_value_list = null;
         try {
             String modulename = object.getString("module_name");
@@ -160,38 +176,146 @@ public class Details_frag extends Fragment {
                             for (int k=0;k<linearLayoutVertical.getChildCount();k++){
                                 if (linearLayoutVertical.getChildAt(k) instanceof TextView ) {
                                     TextView textView = (TextView) linearLayoutVertical.getChildAt(k);
-                                    try {
-                                        if (textView.getTag(R.id.key).toString().equals(""))
+//                                    Log.e(TAG, "fillData: this is gat tag("+textView.getTag(R.id.key));
+                                        if (textView.getTag(R.id.key)==null)
                                         {
-                                            textView.setText(jsonObject.getString("value"));
+//                                            Log.e(TAG, "fillData: this text view has no tag asingned value" );
+//                                            textView.setText(jsonObject.getString("value"));
+                                        }else if (textView.getTag(R.id.key)!=null)
+                                        {
+                                            Object tag = textView.getTag(R.id.key);
+                                            if ("account_id".equals(tag)) {
+                                                Log.e(TAG, "fillData:textView.getTag(R.id.id) "+textView.getTag(R.id.id));
+//                                                textView.setTag(R.id.id,jsonObject.getString("value"));
+                                                textView.setTag(R.id.key, "account_name");
+                                            } else if ("assigned_user_id".equals(tag)) {
+//                                                textView.setTag(R.id.id,jsonObject.getString("value"));
+                                                textView.setTag(R.id.key, "assigned_user_name");
+                                            }
+                                            if(textView.getTag(R.id.key).equals(jsonObject.getString("name"))) {
+                                                if (textView.getTag(R.id.key).equals("team_set_id")) {
+                                                    String name = databasehelper.fetchTeamName(jsonObject.getString("value"));
+                                                    Log.e(TAG, "fillData: your fetched db value is:" + name);
+                                                    textView.setText(name);
+                                                } else {
+//                                                    Log.e(TAG, "onCreateView: textview:" + textView.getText().toString() + " tag=>" + textView.getTag(R.id.key));
+                                                    textView.setText(jsonObject.getString("value"));
+                                                }
+                                            }if (textView.getTag(R.id.type)!=null){
+                                                if (textView.getTag(R.id.type).equals("relate")){
+//                                                    Log.e(TAG, "fillData: you got a relate Data field" );
+                                                    textView.setTextColor(R.color.purple_200);
+                                                    textView.setOnClickListener(new View.OnClickListener() {
+                                                        @Override
+                                                        public void onClick(View v) {
+                                                            Log.e(TAG, "onClick: id:"+textView.getTag(R.id.id)+" module:"+textView.getTag(R.id.module));
+                                                            Log.e(TAG, "onClick: you Clicked on realte field text view" );
+                                                            Intent i=new Intent(getContext(),Detail.class);
+                                                            String id= (String) textView.getTag(R.id.id);
+                                                            String module= (String) textView.getTag(R.id.module);
+                                                            Log.e(TAG, "onClick:this is sending another req id"+id+" module:"+module);
+                                                            i.putExtra("id",id);
+                                                            i.putExtra("module_name",module);
+                                                            startActivity(i);
+                                                        }
+                                                    });
+                                                }
+                                            }
                                         }
-                                    } catch (JSONException e) {
-                                        e.printStackTrace();
+
+                                }else if (linearLayoutVertical.getChildAt(k) instanceof LinearLayout){
+                                    LinearLayout linearLayouthorizontal= (LinearLayout) linearLayoutVertical.getChildAt(k);
+//                                    Log.e(TAG, "fillData: you got a  horizontal linear Layout =>" +linearLayouthorizontal.getTag(R.id.key));
+                                    if (linearLayouthorizontal.getTag(R.id.key)!=null){
+                                        if (linearLayouthorizontal.getTag(R.id.key).equals(jsonObject.getString("name"))){
+                                            Log.e(TAG, "fillData: you found a  match=:"+linearLayouthorizontal.getTag(R.id.key)+" of type:"+linearLayouthorizontal.getTag(R.id.type));
+//                                           // place here swich case based on type
+                                            //cases: multi-phone, multi-email, textarea,comment,multi-address,multi-tag
+                                            switch (linearLayouthorizontal.getTag(R.id.type).toString()){
+                                                case "multi-phone":
+                                                    MultiLayoutfields("hiddenPhone",linearLayouthorizontal);
+                                                    break;
+                                                case "multi-email":
+                                                    Log.e(TAG, "fillData: we are solving multi-email case==>" );
+                                                    MultiLayoutfields("hiddenEmail",linearLayouthorizontal);
+                                                    break;
+                                                case "textarea":
+                                                    textArea(linearLayouthorizontal,jsonObject.getString("value"));
+                                                    break;
+                                                case "comment":
+                                                case "multi-tag":
+
+//                                                    JSONObject jsonObject1=jsonObject.getJSONObject("value");
+////                                                    Log.e(TAG, "fillData: "+jsonObject1 );
+//                                                    for (int l=0;l<jsonObject1.length();l++){
+//
+//                                                    }
+                                                    TextView textView=new TextView(getContext());
+                                                    textView.setLayoutParams(params1);
+                                                    textView.setGravity(Gravity.CENTER);
+                                                    textView.setText(jsonObject.getString("value"));
+                                                    linearLayouthorizontal.addView(textView);
+                                                    break;
+                                                case "multi-address":
+                                                    MultiLayoutfields("hiddenAddress",linearLayouthorizontal);
+                                                    break;
+//                                                case "multi-tag":
+//                                                    break;
+                                                default:
+                                            }
+                                        }
                                     }
-                                    Log.e(TAG, "onCreateView: textview"+textView.getText().toString()+" tag=>"+textView.getTag(R.id.key));
                                 }
-//                                if (li)
                             }
                         }
                     }
-                    }
-                    Log.e(TAG, "key:"+key+":"+jsonObject.getString("value"));
+                }
+//                Log.e(TAG, "key:"+key+":"+jsonObject.getString("value"));
 //                }
 
             } catch (JSONException e) {
-            e.printStackTrace();
-        }
+                e.printStackTrace();
+            }
         } catch (JSONException e) {
             e.printStackTrace();
         }
+    }
 
+    private void textArea(LinearLayout linearLayouthorizontal, String value) {
 
-        return view;
-        // Inflate the layout for this fragment
+        ReadMoreTextView readMoreTextView=new ReadMoreTextView(getContext());
+        readMoreTextView.setText(value);
+        readMoreTextView.setGravity(Gravity.CENTER);
+        linearLayouthorizontal.addView(readMoreTextView);
+    }
 
+    private void MultiLayoutfields(String hidden, LinearLayout linearLayouthorizontal) {
+
+        ArrayList<String> arraylist = new ArrayList<>();
+
+        switch (hidden) {
+            case "hiddenEmail":
+                arraylist = fetchMultiValued(hidden, arraylist, "email_address");
+                break;
+            case "hiddenPhone":
+                arraylist = fetchMultiValued(hidden, arraylist, "phone_number");
+                break;
+            case "hiddenAddress":
+                arraylist=fetchAddress("hiddenAddress",arraylist);
+        }
+        linearLayouthorizontal.setOrientation(LinearLayout.VERTICAL);
+        for (int i=0;i<arraylist.size();i++){
+            TextView textView= new TextView(getContext());
+//            textView.setLayoutParams(params1);
+//            textView.setPadding(10,10,10,10);
+            textView.setGravity(Gravity.CENTER);
+            textView.setText(arraylist.get(i));
+            linearLayouthorizontal.addView(textView);
+        }
     }
 
     private void createLayout(){
+        // this function is for creating over all Dynamic Layout with
        String key=null;
         for(int i=0;i<details.length();i++){
             try {
@@ -210,6 +334,7 @@ public class Details_frag extends Fragment {
                             textView=new TextView(getContext());
                             textView.setLayoutParams(params);
                             textView.setText(key);
+                            textView.setTag(null);
                             textView.setGravity(Gravity.CENTER);
                             textView1=new TextView(getContext());
                             textView1.setLayoutParams(params1);
@@ -221,6 +346,7 @@ public class Details_frag extends Fragment {
                             linearLayout.addView(linearLayout1);
                             break;
                         case "relate":
+                            String module=getDisplayNames(details.getString(i),"module");
                             LinearLayout linearLayout2 = new LinearLayout(getContext());
                             linearLayout2.setOrientation(LinearLayout.VERTICAL);
                             linearLayout1 = new LinearLayout(getContext());
@@ -228,11 +354,13 @@ public class Details_frag extends Fragment {
                             textView=new TextView(getContext());
                             textView.setLayoutParams(params);
                             textView.setText(key);
+                            textView.setTag(null);
                             textView.setGravity(Gravity.CENTER);
                             textView1=new TextView(getContext());
                             textView1.setLayoutParams(params1);
                             textView1.setGravity(Gravity.CENTER);
                             textView1.setTag(R.id.key,details.getString(i));
+                            textView1.setTag(R.id.type,"relate");
                             textView1.setTag(R.id.id,id);
                             textView1.setTag(R.id.module,module);
                             //FETCH NAME FORM DATABASE
@@ -247,41 +375,30 @@ public class Details_frag extends Fragment {
                             linearLayout.addView(linearLayout1);
                             break;
                         case "multi-phone":
-                            Log.e(TAG, "createLayout: "+key );
-                            linearLayout1=new LinearLayout(getContext());
-                            textView=new TextView(getContext());
-                            textView.setText(key);
-                            textView.setGravity(Gravity.CENTER);
-                            textView.setLayoutParams(params);
-                            linearLayout1.addView(textView);
-                            linearLayout2=new LinearLayout(getContext());
-                            linearLayout2.setTag(R.id.key,details.getString(i));
-                            linearLayout2.setLayoutParams(params1);
-                            linearLayout1.addView(linearLayout2);
-                            linearLayout.addView(linearLayout1);
-
-//                            Multifields("hiddenPhone","phone_number",key,Linkify.PHONE_NUMBERS);
-                            break;
                         case "multi-email":
                             linearLayout1=new LinearLayout(getContext());
                             textView=new TextView(getContext());
                             textView.setText(key);
+                            textView.setTag(null);
                             textView.setLayoutParams(params);
                             linearLayout1.addView(textView);
-                            linearLayout1.setTag(R.id.key,details.getString(i));
                             linearLayout2=new LinearLayout(getContext());
+                            linearLayout2.setTag(R.id.key,details.getString(i));
+                            linearLayout2.setTag(R.id.type,typr);
                             linearLayout2.setLayoutParams(params1);
                             linearLayout1.addView(linearLayout2);
                             linearLayout.addView(linearLayout1);
-//                            Multifields("hiddenEmail","email_address",key, Linkify.EMAIL_ADDRESSES);
+//                            Multifields("hiddenPhone","phone_number",key,Linkify.PHONE_NUMBERS);
                             break;
                         case "select":
                             linearLayout1=new LinearLayout(getContext());
                             textView=new TextView(getContext());
                             textView.setText(key);
                             textView.setLayoutParams(params);
+                            textView.setTag(null);
                             linearLayout1.addView(textView);
                             textView1=new TextView(getContext());
+                            textView1.setTag(R.id.key,details.getString(i));
                             textView1.setGravity(Gravity.CENTER);
                             textView1.setLayoutParams(params1);
                             linearLayout1.addView(textView1);
@@ -291,6 +408,7 @@ public class Details_frag extends Fragment {
                             linearLayout1=new LinearLayout(getContext());
                             textView=new TextView(getContext());
                             textView.setLayoutParams(params);
+                            textView.setTag(null);
                             textView.setGravity(Gravity.CENTER);
                             textView.setText(key);
                             linearLayout1.addView(textView);
@@ -305,54 +423,19 @@ public class Details_frag extends Fragment {
                             linearLayout.addView(linearLayout1);
                             break;
                         case "textarea":
-                            linearLayout1=new LinearLayout(getContext());
-                            textView=new TextView(getContext());
-                            textView.setText(key);
-                            textView.setLayoutParams(params);
-                            linearLayout1.addView(textView);
-                            linearLayout2=new LinearLayout(getContext());
-                            linearLayout2.setTag(R.id.key,details.getString(i));
-                            linearLayout2.setLayoutParams(params1);
-                            linearLayout1.addView(linearLayout2);
-                            linearLayout.addView(linearLayout1);
-                            break;
                         case "comment":
-                            linearLayout1=new LinearLayout(getContext());
-                            textView=new TextView(getContext());
-                            textView.setText(key);
-                            textView.setLayoutParams(params);
-                            linearLayout1.addView(textView);
-                            linearLayout2=new LinearLayout(getContext());
-                            linearLayout2.setTag(R.id.key,details.getString(i));
-                            linearLayout2.setLayoutParams(params1);
-                            linearLayout1.addView(linearLayout2);
-                            linearLayout.addView(linearLayout1);
-                            break;
                         case "multi-address":
-                            linearLayout1=new LinearLayout(getContext());
-                            textView=new TextView(getContext());
-                            textView.setText(key);
-                            textView.setLayoutParams(params);
-                            linearLayout1.addView(textView);
-                            linearLayout2=new LinearLayout(getContext());
-                            linearLayout2.setLayoutParams(params1);
-                            linearLayout2.setTag(R.id.key,details.getString(i));
-                            linearLayout1.addView(linearLayout2);
-                            linearLayout.addView(linearLayout1);
-//                            arrayListaddress=new ArrayList<>();
-//                            arrayListaddress=fetchAddress("hiddenAddress",arrayListaddress);
-//                            Log.e(TAG, "this id multi address field::= "+arrayListaddress );
-//                            MultiFieldAddressLayout(key,arrayListaddress);
-                            break;
                         case "multi-tag":
                             linearLayout1=new LinearLayout(getContext());
                             textView=new TextView(getContext());
                             textView.setText(key);
+                            textView.setTag(null);
                             textView.setLayoutParams(params);
                             linearLayout1.addView(textView);
                             linearLayout2=new LinearLayout(getContext());
-                            linearLayout2.setLayoutParams(params1);
                             linearLayout2.setTag(R.id.key,details.getString(i));
+                            linearLayout2.setLayoutParams(params1);
+                            linearLayout2.setTag(R.id.type,typr);
                             linearLayout1.addView(linearLayout2);
                             linearLayout.addView(linearLayout1);
                             break;
@@ -360,11 +443,14 @@ public class Details_frag extends Fragment {
                             linearLayout1=new LinearLayout(getContext());
                             textView=new TextView(getContext());
                             textView.setText(key);
+                            textView.setTag(null);
                             textView.setLayoutParams(params);
                             linearLayout1.addView(textView);
                             textView1=new TextView(getContext());
                             textView1.setLayoutParams(params1);
+                            textView1.setGravity(Gravity.CENTER);
                             textView1.setTag(R.id.key,details.getString(i));
+                            textView1.setTag(R.id.type,typr);
                             linearLayout1.addView(textView1);
                             linearLayout.addView(linearLayout1);
                             break;
@@ -410,10 +496,10 @@ public class Details_frag extends Fragment {
 
     private ArrayList<String> fetchAddress(String hiddenAddress, ArrayList<String> arrayListaddress) {
         JSONArray array= null;
-        Log.e(TAG, "fetchAddress: this functon called...! ");
+//        Log.e(TAG, "fetchAddress: this functon called...! ");
         try {
             array = (JSONArray) multi_fields.get(hiddenAddress);
-            Log.e(TAG, "fetchAddress:array==> "+array );
+//            Log.e(TAG, "fetchAddress:array==> "+array );
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -421,9 +507,9 @@ public class Details_frag extends Fragment {
         for (int i=0;i<array.length();i++){
             try {
                 object = array.getJSONObject(i);
-                Log.e(TAG, "fetchAddress: "+object );
+//                Log.e(TAG, "fetchAddress: "+object );
                 String add=object.getString("street")+" "+object.get("city")+", "+object.get("state")+", "+object.get("country")+", "+object.get("postal_code");
-                Log.e(TAG, "fetchAddress:the address is==> "+add );
+//                Log.e(TAG, "fetchAddress:the address is==> "+add );
                 arrayListaddress.add(add);
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -480,15 +566,15 @@ public class Details_frag extends Fragment {
         }
         return fieldvalue;
     }
-    private ArrayList<String> fetchMultiValued(String s,ArrayList<String> arrayList,String valetoadd){
+    private ArrayList<String> fetchMultiValued(String hiddenfield,ArrayList<String> arrayList,String valetoadd){
         try {
-            JSONArray array= (JSONArray) multi_fields.get(s);
+            JSONArray array= (JSONArray) multi_fields.get(hiddenfield);
             for (int i=0;i<array.length();i++) {
                 JSONObject object = array.getJSONObject(i);
-                Log.e(TAG, "detailtabrequest:json object in for loop==> "+object+"||===>"+ object.get(valetoadd) );
+//                Log.e(TAG, "detailtabrequest:json object in for loop==> "+object+"||===>"+ object.get(valetoadd) );
                 arrayList.add(object.getString(valetoadd));
             }
-            Log.e(TAG, "onClick:hiddenPhone "+array );
+//            Log.e(TAG, "onClick:hiddenPhone "+array );
         } catch (JSONException e) {
             e.printStackTrace();
         }

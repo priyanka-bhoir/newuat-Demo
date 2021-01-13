@@ -212,7 +212,7 @@ public class Detail extends AppCompatActivity {
         tabLayout.setupWithViewPager(viewPager);
     }
 
-    private void detailtabrequest(String url) {
+    public void detailtabrequest(String url) {
 //        Log.e(TAG, "detailtabrequest:auth--> " + auth);
 //        Log.e(TAG, "detailtabrequest: " + url);
         progressDialog.setVisibility(View.VISIBLE);
@@ -1015,5 +1015,11 @@ public class Detail extends AppCompatActivity {
 
 /***************************************/
 
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        this.finish();
     }
 }
