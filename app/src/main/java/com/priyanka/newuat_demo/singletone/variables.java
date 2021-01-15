@@ -11,4 +11,5 @@ public class variables {
     public static final String URL_SUB_LAYOUT = "sub-layout";
 //    public static final String auth=prefrence.getToken();
     public static final String BEARER ="Bearer ";
+    public static final String URL_GETENTRY_LIST="getentry-list";
 }

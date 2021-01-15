@@ -52,6 +52,8 @@ import com.android.volley.AuthFailureError;
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.developer.dk.toastmessage.ToasterMsg;
@@ -64,6 +66,7 @@ import com.priyanka.newuat_demo.Adapter.Detailsadapter;
 import com.priyanka.newuat_demo.Adapter.ViewPagerAdapter;
 import com.priyanka.newuat_demo.Database.Databasehelper;
 import com.priyanka.newuat_demo.fragment.Details_frag;
+import com.priyanka.newuat_demo.singletone.variables;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -81,6 +84,7 @@ import java.util.Set;
 
 import kotlin.text.UStringsKt;
 
+import static android.content.ContentValues.TAG;
 import static com.priyanka.newuat_demo.singletone.variables.URL_DETAIL;
 
 public class Detail extends AppCompatActivity {
@@ -112,11 +116,13 @@ public class Detail extends AppCompatActivity {
     AlertDialog dialog1;
     AlertDialog dialog;
     ProgressBar progressDialog;
-    JSONObject multi_fields = null;
+    JSONObject multi_fields;
     ArrayList<String> arrayListnumbers,arrayListEmail,arrayListaddress;
     Geocoder geocoder;
     List<Address> addresses;
     ContentValues values;
+    ArrayList<HashMap<String,String>> hashMapArrayList;
+
 
     private final List<Fragment> fragments = new ArrayList<>();
     private final List<String> fragmentTitle = new ArrayList<>();
@@ -132,6 +138,9 @@ public class Detail extends AppCompatActivity {
         prefrence = new SharedPrefrence(getApplicationContext());
         auth = "Bearer " +prefrence.getToken();
         databasehelper = new Databasehelper(getApplicationContext());
+        queue = Volley.newRequestQueue(getApplicationContext());
+        hashMapArrayList=new ArrayList<>();
+
         pagerAdapter= new PagerAdapter() {
             @Override
             public int getCount() {
@@ -176,14 +185,21 @@ public class Detail extends AppCompatActivity {
         Log.e(TAG, "onCreate: " + id);
         String url = prefrence.getURl();
         Log.e(TAG, "onCreate: " + url);
-        mParam2 = databasehelper.getBackendname(module);
+        mParam2=module;
+        try {
+            mParam2 = databasehelper.getBackendname(module);
+        }catch (Exception e){
+            Log.e(TAG, "onCreate: "+e );
+        }
         map = new ArrayList<>();
         imageView = findViewById(R.id.nodatafound);
 
         getSupportActionBar().setTitle(mParam2+" Details");
 
         //request
+        requestTeam(url+ variables.version+variables.URL_GETENTRY_LIST);
         detailtabrequest(url + version + URL_DETAIL);
+//        relatetabreqest()
 
 //        tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
 //            @Override
@@ -211,14 +227,101 @@ public class Detail extends AppCompatActivity {
 //        });
         tabLayout.setupWithViewPager(viewPager);
     }
+    private void requestTeam(String url) {
+        Log.e(TAG, "requestTeam: called" );
+        JsonObjectRequest request=new JsonObjectRequest(Request.Method.POST,url, null, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                Log.e(TAG, "onResponse:this is teams tesponse "+response );
+//                try {
+//                    errormessage = response.getString("error_message");
+//                    if (response.getString("status").equals("200")&& errormessage.equals(null)){
+//                        Log.e(TAG, "detailtabrequest: ");
+//                    }
+//                } catch (Exception e) {
+//                    Log.e(TAG, "onResponse: " + e);
+//                }
+                try {
+                    ArrayList<String> keyList = new ArrayList<>();
+                    JSONArray TeamData =response.getJSONArray("data");
+                    Log.e(TAG, "onResponse:of team++> "+TeamData);
+                    JSONObject object;
+                    for (int i=0;i<TeamData.length();i++ ){
+                        object=TeamData.getJSONObject(i);
+                        HashMap hashMap=new HashMap();
+                        Iterator<String> keys = object.keys();
+                        while (keys.hasNext()){
+                            keyList.add(keys.next());
+                        }
+                        for (int j=0;j<TeamData.length();j++){
+                            Log.e(TAG, "team++>keyList:==>" + keyList.get(j) + "\n");
+                            hashMap.put(keyList.get(j), object.getString(keyList.get(j)));
+                            Log.e(TAG, "Team in for loop:" + keyList.get(j) + ":=>" + object.getString(keyList.get(j)));
+                        }
+                        hashMapArrayList.add(hashMap);
+                        Log.e(TAG, "Team map=>>"+hashMapArrayList);
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.e(TAG, "onErrorResponse: this is treams error"+error);
+            }
+        }) {
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                //return super.getHeaders();
 
+                HashMap headers = new HashMap();
+                headers.put("Content-Type", "application/json");
+                headers.put("Accept", "application/json");
+                headers.put("Authorization", auth);
+                Log.e(TAG, "headers:------------> " + headers);
+                return headers;
+            }
+
+            @Override
+            public byte[] getBody() {
+                JSONObject object = new JSONObject();
+                try {
+                    JSONObject object1 = new JSONObject();
+                    object1.put("module_name", "User");
+                    object1.put("max_result", 500);
+                    object1.put("sort", "name");
+                    object1.put("order_by", "ASC");
+                    object1.put("query", "");
+                    object1.put("favorite", "false");
+                    object1.put("save_search", "false");
+                    JSONObject object2 = new JSONObject();
+                    JSONArray selectedField = selectedfield(databasehelper, "Accounts");
+                    object2.put("select_fields", selectedField);
+                    object1.put("name_value_list", object2);
+                    object.put("rest_data", object1);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                Log.e(TAG, "getBody of team request: "+object);
+                return object.toString().getBytes();
+            }
+        };
+        Log.e(TAG, "requestTeam:request:"+request);
+        request.setRetryPolicy(new DefaultRetryPolicy(
+                1000 * 100,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+        queue.add(request);
+    }
     public void detailtabrequest(String url) {
 //        Log.e(TAG, "detailtabrequest:auth--> " + auth);
 //        Log.e(TAG, "detailtabrequest: " + url);
         progressDialog.setVisibility(View.VISIBLE);
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, url, null, response -> {
-            JSONObject name_value_list = null;
+//            JSONObject name_value_list = null;
 //            JSONObject multi_fields = null;
+            JSONObject object = null;
             try {
                 errormessage = response.getString("error_message");
                 if (response.getString("status").equals("200")&& errormessage.equals(null)){
@@ -228,9 +331,9 @@ public class Detail extends AppCompatActivity {
                 Log.e(TAG, "onResponse: " + e);
             }try {
                 progressDialog.setVisibility(View.INVISIBLE);
-                JSONObject object = response.getJSONObject("entry_list");
+                object = response.getJSONObject("entry_list");
                 //view pager
-                viewPagerAdapter=new ViewPagerAdapter(getSupportFragmentManager(),1,module,id,object);
+                viewPagerAdapter=new ViewPagerAdapter(getSupportFragmentManager(),1,module,id,object,hashMapArrayList);
                 viewPager.setAdapter(viewPagerAdapter);
                 viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
             } catch (JSONException e) {
@@ -286,67 +389,94 @@ public class Detail extends AppCompatActivity {
 //            }
 //            else if (name_value_list.length()>0){
 
-            //for number
-//            arrayListnumbers=new ArrayList<>();
-//            arrayListnumbers=fetchMultiValued("hiddenPhone",arrayListnumbers,"phone_number");
-//            Log.e(TAG, "detailtabrequest:arrayListnumbers==> "+arrayListnumbers );
-//            //this is for Email storing in array list
-//            arrayListEmail=new ArrayList<>();
-//            arrayListEmail=fetchMultiValued("hiddenEmail",arrayListEmail,"email_address");
-//            Log.e(TAG, "detailtabrequest:arrayListEmail==> "+arrayListEmail );
+
 ////            this is for Address
-//            arrayListaddress=new ArrayList<>();
-//            arrayListaddress=fetchAddress("hiddenAddress",arrayListaddress);
-//            Log.e(TAG, "detailtabrequest: "+arrayListaddress );
 //
 //
 //            Log.e(TAG, "hashmap keyset=: "+hashMap.keySet() );
 //            Log.e(TAG, "hashmap valueset=: "+hashMap.values() );
-//            Set<String> keySet = hashMap.keySet();
-//            ArrayList<String> listOfKeys = new ArrayList<String>(keySet);
-//            Collection<String> value=  hashMap.values();
-//            ArrayList<String> listOfValues = new ArrayList<String>(value);
+
+            try {
+
+
+                JSONObject name_value_list = object.getJSONObject("name_value_list");
+                multi_fields=object.getJSONObject("multi_fields");
+                ArrayList<String> keyList = new ArrayList<>();
+                Iterator<String> keys=name_value_list.keys();
+                hashMap=new HashMap();
+                while (keys.hasNext()){
+                    keyList.add(keys.next());
+                }
+                for (int i=0;i<name_value_list.length();i++){
+                    JSONObject jsonObject=name_value_list.getJSONObject(keyList.get(i));
+                    String key=jsonObject.getString("name");
+                    String value= jsonObject.getString("value");
+                    Log.e(TAG, "detailtabrequest: "+key+" value:"+value);
+                    hashMap.put(key,value);
+
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+            //for number
+            arrayListnumbers=new ArrayList<>();
+            arrayListnumbers=fetchMultiValued("hiddenPhone",arrayListnumbers,"phone_number");
+            Log.e(TAG, "detailtabrequest:arrayListnumbers==> "+arrayListnumbers );
+            //this is for Email storing in array list
+            arrayListEmail=new ArrayList<>();
+            arrayListEmail=fetchMultiValued("hiddenEmail",arrayListEmail,"email_address");
+            Log.e(TAG, "detailtabrequest:arrayListEmail==> "+arrayListEmail );
+            arrayListaddress=new ArrayList<>();
+            arrayListaddress=fetchAddress("hiddenAddress",arrayListaddress);
+            Log.e(TAG, "detailtabrequest: "+arrayListaddress );
+
+            Set<String> keySet = hashMap.keySet();
+            ArrayList<String> listOfKeys = new ArrayList<String>(keySet);
+            Collection<String> value=  hashMap.values();
+            ArrayList<String> listOfValues = new ArrayList<String>(value);
 //
-//            for(int i=0;i<listOfKeys.size();i++){
-//                Log.e(TAG, "==>key:"+listOfKeys.get(i)+" value:"+listOfValues.get(i));
-//                if (listOfKeys.get(i).equals("Name")){
-//                    displayname=listOfValues.get(i);
-//                }
-//                if (listOfKeys.get(i).equals("Industry")){
-//                    companyname=listOfValues.get(i);
-//                }
-//                if (listOfKeys.get(i).equals("Email")){
-//                    if (!arrayListEmail.isEmpty()){
-//                        email=listOfValues.get(i);
-//                        String s=arrayListEmail.get(0);
-//                        listOfValues.set(i,s);
-//                    }
-//                }
-//                if (listOfKeys.get(i).equals("Phone")){
-//                    if (!arrayListnumbers.isEmpty()){
-//                        String s=arrayListnumbers.get(0);
-//                        number=listOfValues.get(i);
-//                        listOfValues.set(i,s);
-//                    }
-//                }
-//                if (listOfKeys.get(i).equals("Address")){
-//                    displayaddress="";
-//                    if (!arrayListaddress.isEmpty()){
-//                        String s=arrayListaddress.get(0);
-//                        displayaddress=s;
-//                        listOfValues.set(i,s);
-//                        Log.e(TAG, "detailtabrequest: this is address==>"+s );
-//                    }
-//                }if (listOfKeys.get(i).equals("Website")){
-//                    Website=listOfValues.get(i);
-//                }
-//            }
-//            name_txt.setText((!displayname.isEmpty())?displayname : "");
-//            company_txt.setText((!companyname.isEmpty())?companyname : "");
-//            addr_txt.setText((!displayaddress.isEmpty())?displayaddress:"");
-
-
-
+            for(int i=0;i<listOfKeys.size();i++){
+                Log.e(TAG, "==>key:"+listOfKeys.get(i)+" value:"+listOfValues.get(i));
+                if (listOfKeys.get(i).equals("name")){
+                    displayname=listOfValues.get(i);
+                }
+                if (listOfKeys.get(i).equals("industry")){
+                    companyname=listOfValues.get(i);
+                }
+                if (listOfKeys.get(i).equals("Email")){
+                    if (!arrayListEmail.isEmpty()){
+                        email=listOfValues.get(i);
+                        String s=arrayListEmail.get(0);
+                        listOfValues.set(i,s);
+                    }
+                }
+                if (listOfKeys.get(i).equals("Phone")){
+                    if (!arrayListnumbers.isEmpty()){
+                        String s=arrayListnumbers.get(0);
+                        number=listOfValues.get(i);
+                        listOfValues.set(i,s);
+                    }
+                }
+                if (listOfKeys.get(i).equals("address")){
+                    displayaddress="";
+                    if (!arrayListaddress.isEmpty()){
+                        String s=arrayListaddress.get(0);
+                        displayaddress=s;
+                        listOfValues.set(i,s);
+                        Log.e(TAG, "detailtabrequest: this is address==>"+s );
+                    }
+                }if (listOfKeys.get(i).equals("Website")){
+                    Website=listOfValues.get(i);
+                }
+            }
+            try {
+                name_txt.setText((!displayname.isEmpty())?displayname : "");
+                company_txt.setText((!companyname.isEmpty())?companyname : "");
+                addr_txt.setText((!displayaddress.isEmpty())?displayaddress:"");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 
 
             //Setting OnClickListeners
@@ -511,7 +641,6 @@ public class Detail extends AppCompatActivity {
                 1000 * 100,
                 DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
-        queue = Volley.newRequestQueue(getApplicationContext());
         Log.e(TAG, "detailtabrequest requets1: " + request + "||" + queue);
 
         queue.add(request);
@@ -774,10 +903,23 @@ public class Detail extends AppCompatActivity {
         return jsonArray;
 
     }
-
+    private ArrayList<String> fetchMultiValued(String hiddenfield,ArrayList<String> arrayList,String valetoadd){
+        try {
+            JSONArray array= (JSONArray) multi_fields.get(hiddenfield);
+            for (int i=0;i<array.length();i++) {
+                JSONObject object = array.getJSONObject(i);
+//                Log.e(TAG, "detailtabrequest:json object in for loop==> "+object+"||===>"+ object.get(valetoadd) );
+                arrayList.add(object.getString(valetoadd));
+            }
+//            Log.e(TAG, "onClick:hiddenPhone "+array );
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return arrayList;
+    }
     private ArrayList<String> fetchAddress(String hiddenAddress, ArrayList<String> arrayListaddress) {
         JSONArray array= null;
-        Log.e(TAG, "fetchAddress: this functon called...! ");
+        Log.e(TAG, "fetchAddress: this functon called...! "+multi_fields);
         try {
             array = (JSONArray) multi_fields.get(hiddenAddress);
             Log.e(TAG, "fetchAddress:array==> "+array );
@@ -1015,6 +1157,20 @@ public class Detail extends AppCompatActivity {
 
 /***************************************/
 
+    }
+    public JSONArray selectedfield(Databasehelper databasehelper, String modulename) {
+        String s;
+        s = databasehelper.getlayoutdefs(modulename);
+        JSONArray jsonArray = null;
+        JSONObject object = null;
+        try {
+            object = new JSONObject(s);
+            jsonArray = object.getJSONArray("list");
+            Log.e("TAG", "selectedfield: from Team " + jsonArray);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return jsonArray;
     }
 
     @Override

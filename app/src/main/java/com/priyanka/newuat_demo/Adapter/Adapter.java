@@ -230,6 +230,7 @@ public class Adapter extends ArrayAdapter<HashMap<String, String>> implements Ac
                 Log.e(TAG, "onClick: this is the id you search for ===>"+id );
                 Intent i =new Intent(activity, Detail.class);
                 i.putExtra("id",id);
+                Log.e(TAG, "this is the module i was searching for :"+mParam1);
                 i.putExtra("module_name",mParam1);
                 context.startActivity(i);
             }

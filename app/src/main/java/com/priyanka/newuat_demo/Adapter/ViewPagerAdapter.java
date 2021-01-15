@@ -18,6 +18,7 @@ import com.priyanka.newuat_demo.fragment.Details_frag;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class ViewPagerAdapter extends FragmentPagerAdapter {
     private static final String TAG = "view pager";
@@ -25,6 +26,7 @@ public class ViewPagerAdapter extends FragmentPagerAdapter {
     Detailsadapter detailsadapter;
     ArrayList<String> listOfKeys;
     ArrayList<String> listOfValues;
+    ArrayList<HashMap<String, String>> hashMapArrayList;
     private final String[] tabTitles = new String[]{"DETAILS", "RELATED"};
     JSONObject object;
 
@@ -35,6 +37,15 @@ public class ViewPagerAdapter extends FragmentPagerAdapter {
         this.module=module;
         this.object=object;
 //        Log.e(TAG, "ViewPagerAdapter: "+"viewpager created" +id+"||==>"+module);
+    }
+
+    public ViewPagerAdapter(FragmentManager supportFragmentManager, int i, String module, String id, JSONObject object, ArrayList<HashMap<String, String>> hashMapArrayList) {
+        super(supportFragmentManager, i);
+        Log.e(TAG, "ViewPagerAdapter: called " );
+        this.id=id;
+        this.module=module;
+        this.object=object;
+        this.hashMapArrayList=hashMapArrayList;
     }
 
 //    public ViewPagerAdapter(FragmentManager supportFragmentManager, int i, ArrayList<String> listOfKeys, ArrayList<String> listOfValues, String module) {
@@ -50,7 +61,7 @@ public class ViewPagerAdapter extends FragmentPagerAdapter {
         Fragment fragment = null;
         if (position == 0)
         {
-            fragment = new Details_frag(module,id,object);
+            fragment = new Details_frag(module,id,object,hashMapArrayList);
         }
         else if (position == 1)
         {

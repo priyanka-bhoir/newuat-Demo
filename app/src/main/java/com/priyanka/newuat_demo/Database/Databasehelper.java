@@ -274,6 +274,19 @@ public class Databasehelper extends SQLiteOpenHelper {
         return string;
     }
 
+    public String getFrontEndname(String string){
+        String data=null;
+        SQLiteDatabase db=getReadableDatabase();
+        String selection=MODULENAME+"=?";
+        Cursor cursor=db.query(Table_MODULE_LIST,new String[]{MODULEPLURAL},selection,new String[]{string},null,null,null);
+        if (cursor!=null){
+            cursor.moveToFirst();
+            data=cursor.getString(0);
+            Log.e(TAG, "getFrontEndname: "+data );
+        }
+        return data;
+    }
+
     public String getdisplaylabel(String name){
         //these will fetch Display label from mobile layout
         String display_label="";
@@ -286,6 +299,25 @@ public class Databasehelper extends SQLiteOpenHelper {
             Log.e(TAG, "getdisplaylabel: "+display_label );
         }
         return display_label;
+    }
+    public String fetchTeamName(String value) {
+        String abc="";
+
+        String query="select * FROM "+ Table_TEAM;
+
+        SQLiteDatabase db=getReadableDatabase();
+        Log.e(TAG, "fetchTeamName: "+value);
+        Cursor cursor=db.rawQuery(query,null);
+        Log.e(TAG, "fetchTeamName: cursor.getCount()==>"+cursor.getCount() );
+//        String selection = NAME+ "=?" ;
+//        Cursor cursor=db.query(Table_TEAM,new String[]{ID_TEAM},selection,new String[]{value},null,null,null);
+//        if (cursor!=null){
+//            cursor.moveToFirst();
+//            abc=cursor.getString(cursor.getColumnIndex(NAME));
+//            Log.e(TAG, "getlayoutdefs:cursor "+cursor.getString(cursor.getColumnIndex(NAME)));
+//        }
+//        Log.e(TAG, "fetchTeamName: "+abc );
+        return abc;
     }
     public String getdefs(String module,String field){
         String abc="";
@@ -303,23 +335,9 @@ public class Databasehelper extends SQLiteOpenHelper {
         //these will fetch layoutdefs from mobile layout
        return getdefs(modulename,LAYOUT_DEFS);
     }
+
     public String getFielddefs(String modulename){
         //these will fetch fielddefs from mobile layout
         return getdefs(modulename,FIELDDEFS);
-    }
-
-    public String fetchTeamName(String value) {
-        String abc="";
-        SQLiteDatabase db=getReadableDatabase();
-        Log.e(TAG, "fetchTeamName: "+value);
-        String selection = ID_TEAM+ "=?" ;
-        Cursor cursor=db.query(Table_TEAM,new String[]{NAME},selection,new String[]{value},null,null,null);
-        if (cursor!=null){
-            cursor.moveToFirst();
-            abc=cursor.getString(0);
-            Log.e(TAG, "getlayoutdefs:cursor "+cursor.getString(0));
-        }
-        Log.e(TAG, "fetchTeamName: "+abc );
-        return abc;
     }
 }
