@@ -321,6 +321,7 @@ public class Databasehelper extends SQLiteOpenHelper {
     }
     public String getdefs(String module,String field){
         String abc="";
+        Log.e(TAG, "getdefs: "+module+":"+field);
         SQLiteDatabase db=getReadableDatabase();
         String selection=MODULE_LABEL+"=?";
         Cursor cursor=db.query(Table_MOBILE_LAYOUT, new String[]{field}, selection, new String[]{module},null,null,null);

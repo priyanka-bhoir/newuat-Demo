@@ -15,6 +15,7 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
@@ -104,6 +105,8 @@ public class AccountFragment extends Fragment {
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
+    Toolbar toolbar;
+
 
     public AccountFragment(String s) {
         mParam1 = s;
@@ -140,9 +143,14 @@ public class AccountFragment extends Fragment {
         moduleUrl = prefrence.getURl() + "/api/v1/getentry-list?page=";
         textView = getActivity().findViewById(R.id.pagebox);
         draw = new drawer();
-
+        imageView = getActivity().findViewById(R.id.nodatafound);
+        imageView.setVisibility(View.VISIBLE);
         databasehelper.getMobileListData();
 
+        toolbar=getActivity().findViewById(R.id.toolbar);
+        Log.e(TAG, "onCreate:toolbar.getMenu()==> "+toolbar.getMenu().size());
+        if (toolbar.getMenu().size()==0){
+        toolbar.inflateMenu(R.menu.drawer);}
         mParam2 = databasehelper.getBackendname(mParam1);
 
     }
@@ -154,7 +162,9 @@ public class AccountFragment extends Fragment {
         Log.e(TAG, "ReqestModule: mParam2"+mParam2);
 
         progressDialog.setVisibility(View.VISIBLE);
-            imageView.setVisibility(View.INVISIBLE);
+        imageView.setVisibility(View.INVISIBLE);
+        recyclerView.setVisibility(View.INVISIBLE);
+
         JsonObjectRequest objectRequest = new JsonObjectRequest(Request.Method.POST, moduleUrl, null, new Response.Listener<JSONObject>() {
             private String TAG = "fragment";
             JSONArray jsonArray;
@@ -165,7 +175,9 @@ public class AccountFragment extends Fragment {
                 try {
                     s = response.getString("error_message");
                 }catch (Exception e){
-                    Log.e(TAG, "onResponse: "+e );
+                    recyclerView.setVisibility(View.INVISIBLE);
+                    imageView.setVisibility(View.VISIBLE);
+                    Log.e(TAG, "onResponse:to the data not found error==> "+e );
 
                 }
                 try {
@@ -238,9 +250,11 @@ public class AccountFragment extends Fragment {
                     }
                 }
                 } catch (Exception e) {
-                    Log.e(TAG, "onResponse: " + e);
+                    textView.setText(0+"/"+0);
                     imageView.setVisibility(View.VISIBLE);
                     progressDialog.setVisibility(View.INVISIBLE);
+                    recyclerView.setVisibility(View.INVISIBLE);
+                    Log.e(TAG, "onResponse: this is 2nd exception==>" + e);
                 }
             }
         }, error -> {
@@ -322,7 +336,6 @@ public class AccountFragment extends Fragment {
         recyclerView = getActivity().findViewById(R.id.recyclerview);
         swipeRefreshLayout = getActivity().findViewById(R.id.sw_refresh);
 
-        imageView = getActivity().findViewById(R.id.nodatafound);
         map = new ArrayList<>();
 
         progressDialog=getActivity().findViewById(R.id.indeterminateBarinfrag);
@@ -341,7 +354,7 @@ public class AccountFragment extends Fragment {
                 Log.e(TAG, "onScrollStateChanged:scrollState " + scrollState);
                 if (!recyclerView.canScrollVertically(1)) {
                     Log.e(TAG, "onScrollStateChanged: you are at the bottom");
-                    if (nexturl == null) {
+                        if (to == total) {
 //                        dialog.dismiss();
                         Snackbar.make(getView(), "this is the end", Snackbar.LENGTH_SHORT).show();
                     } else {
@@ -354,7 +367,8 @@ public class AccountFragment extends Fragment {
             @Override
             public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
                 Log.e(TAG, "onScroll: " + firstVisibleItem + " visibleItemCount: " + visibleItemCount + " totalItemCount:" + totalItemCount);
-                if (firstVisibleItem == 0) {
+                if (recyclerView.getChildAt(0)!=null) {
+                    swipeRefreshLayout.setEnabled(recyclerView.getFirstVisiblePosition() == 0 && recyclerView.getChildAt(0).getTop() == 0);
                     swipeRefreshLayout.setOnRefreshListener(() -> {
                         request = (JsonObjectRequest) ReqestModule(moduleUrl, auth,mParam2);
                         queue.add(request);

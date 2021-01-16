@@ -47,6 +47,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.priyanka.newuat_demo.R.drawable.ic_baseline_settings_24;
+
 public class drawer extends AppCompatActivity {
 
     private AppBarConfiguration mAppBarConfiguration;
@@ -70,6 +72,7 @@ public class drawer extends AppCompatActivity {
     String version="/api/v1/";
     String TAG="Drawer class";
     MobileLayout mobileLayout;
+    ProgressDialog progressDialog;
 
 
 
@@ -92,21 +95,26 @@ public class drawer extends AppCompatActivity {
         String moduleUrl = url+version+"module-list";
         String mobileLayoutURL=url+version+"mobile-layout";
 
-        FloatingActionButton fab = findViewById(R.id.fab);
+//        FloatingActionButton fab = findViewById(R.id.fab);
         queue = Volley.newRequestQueue(this);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "hey Welcome to world", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
+//        fab.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                Snackbar.make(view, "hey Welcome to world", Snackbar.LENGTH_LONG)
+//                        .setAction("Action", null).show();
+//            }
+//        });
         intent = getIntent();
 //        String token = intent.getStringExtra("token");
         String tokenpref=prefrence.getToken();
         String name=prefrence.getUname();
         Log.e(TAG, "onCreate:tokenpref "+tokenpref );
         String auth = "Bearer " + tokenpref;
+
+        //Dialog box
+        progressDialog = new ProgressDialog(this);
+        progressDialog.setCancelable(true);
+        progressDialog.setMessage("Loading...........");
 
         drawer = findViewById(R.id.drawer_layout);
         navigationView = findViewById(R.id.nav_view);
@@ -145,6 +153,7 @@ public class drawer extends AppCompatActivity {
             return true;
         });
         toolbar.setNavigationIcon(R.drawable.ic_baseline_dehaze_24);
+
     }
 
 
@@ -175,13 +184,12 @@ public class drawer extends AppCompatActivity {
             default:
 //                if (item.getTitle().toString()==)
                 toolbar.setTitle(item.getTitle().toString());
-                ProgressDialog dialog = new ProgressDialog(this);
-                dialog.setCancelable(true);
-                dialog.setMessage("Loading...........");
-                dialog.show();
+//                toolbar.setSubtitle("Test Subtitle");
+
+//                progressDialog.show();
                 fragment=new AccountFragment(item.getTitle().toString());
                 loadfragment(fragment);
-                dialog.dismiss();
+                progressDialog.dismiss();
                 break;
     }
 }
@@ -223,7 +231,6 @@ public class drawer extends AppCompatActivity {
             Log.e("TAG", "onCreate:modules " + modules.get(i));
             switch (modules.get(i).getName()) {
                 case "Account":
-
                      m.add(0, 0, 0, modules.get(i).getPlural()).setIcon(R.drawable.ic_baseline_account_balance_24);
                      break;
 
@@ -280,7 +287,7 @@ public class drawer extends AppCompatActivity {
         }
         SubMenu subMenu=m.addSubMenu("Others");
         subMenu.add(0,0,0,"Import Contact").setIcon(R.drawable.ic_baseline_contacts_24);
-        subMenu.add(0,0,0,"Settings").setIcon(R.drawable.ic_baseline_settings_24);
+        subMenu.add(0,0,0,"Settings").setIcon(ic_baseline_settings_24);
         subMenu.add(0,0,0,"Sign Out");
     }
 
@@ -385,7 +392,8 @@ public class drawer extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        createMenu(modules,menu);
+//        createMenu(modules,menu);
+//        Log.e(TAG, "onCreateOptionsMenu: "+toolbar.getTitle());
 //        getMenuInflater().inflate(R.menu.drawer, menu);
 //        menu.add(0, 0, 0, "Option1").setShortcut('3', 'c');
 
@@ -393,22 +401,33 @@ public class drawer extends AppCompatActivity {
     }
 
 
-
-    @Override
-    public boolean onPrepareOptionsMenu(Menu menu) {
-//        createMenu(modules,menu);
-//        getMenuInflater().inflate(R.menu.drawer, menu);
-//        menu.add(0, 0, 0, "Option1").setShortcut('3', 'c');
-//        menu.show()
-        return super.onPrepareOptionsMenu(menu);
-//        return true;
-
-    }
+//
+//    @Override
+//    public boolean onPrepareOptionsMenu(Menu menu) {
+////        createMenu(modules,menu);
+////        getMenuInflater().inflate(R.menu.drawer, menu);
+////        menu.add(0, 0, 0, "Option1").setShortcut('3', 'c');
+////        menu.show()
+//        return super.onPrepareOptionsMenu(menu);
+////        return true;
+//
+//    }
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 //        Toast.makeText(this,"you clicked",Toast.LENGTH_LONG).show();
-        drawer.openDrawer(Gravity.LEFT);
+//        drawer.openDrawer(Gravity.LEFT);
+//        progressDialog.show();
+//        Log.e(TAG, "onOptionsItemSelected: " +toolbar.getTitle().toString());
+        try {
+//            String module=databasehelper.getBackendname(toolbar.getTitle().toString());
+            Intent intent=new Intent(drawer.this,CreateFeature.class);
+            intent.putExtra("module",toolbar.getTitle().toString());
+            startActivity(intent);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+//        Log.e(TAG, "onOptionsItemSelected:module==> "+module );
         return super.onOptionsItemSelected(item);
     }
 

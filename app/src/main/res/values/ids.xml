@@ -14,4 +14,5 @@
     <item name="module" type="id"/>
     <item name="key" type="id"/>
     <item name="type" type="id"/>
+    <item name="required" type="id"/>
 </resources>

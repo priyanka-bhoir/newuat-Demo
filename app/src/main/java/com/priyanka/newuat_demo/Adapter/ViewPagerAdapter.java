@@ -15,6 +15,7 @@ import com.priyanka.newuat_demo.Related_frag;
 import com.priyanka.newuat_demo.fragment.AccountFragment;
 import com.priyanka.newuat_demo.fragment.Details_frag;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
@@ -29,13 +30,15 @@ public class ViewPagerAdapter extends FragmentPagerAdapter {
     ArrayList<HashMap<String, String>> hashMapArrayList;
     private final String[] tabTitles = new String[]{"DETAILS", "RELATED"};
     JSONObject object;
+    JSONArray teamData;
 
-    public ViewPagerAdapter(@NonNull FragmentManager fm, int behavior, String module, String id, JSONObject object) {
+    public ViewPagerAdapter(@NonNull FragmentManager fm, int behavior, String module, String id, JSONObject object, JSONArray teamData) {
         super(fm, behavior);
         Log.e(TAG, "ViewPagerAdapter: called " );
         this.id=id;
         this.module=module;
         this.object=object;
+        this.teamData=teamData;
 //        Log.e(TAG, "ViewPagerAdapter: "+"viewpager created" +id+"||==>"+module);
     }
 
@@ -61,7 +64,7 @@ public class ViewPagerAdapter extends FragmentPagerAdapter {
         Fragment fragment = null;
         if (position == 0)
         {
-            fragment = new Details_frag(module,id,object,hashMapArrayList);
+            fragment = new Details_frag(module,id,object,teamData);
         }
         else if (position == 1)
         {

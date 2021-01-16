@@ -122,7 +122,7 @@ public class Detail extends AppCompatActivity {
     List<Address> addresses;
     ContentValues values;
     ArrayList<HashMap<String,String>> hashMapArrayList;
-
+    JSONArray TeamData;
 
     private final List<Fragment> fragments = new ArrayList<>();
     private final List<String> fragmentTitle = new ArrayList<>();
@@ -233,34 +233,11 @@ public class Detail extends AppCompatActivity {
             @Override
             public void onResponse(JSONObject response) {
                 Log.e(TAG, "onResponse:this is teams tesponse "+response );
-//                try {
-//                    errormessage = response.getString("error_message");
-//                    if (response.getString("status").equals("200")&& errormessage.equals(null)){
-//                        Log.e(TAG, "detailtabrequest: ");
-//                    }
-//                } catch (Exception e) {
-//                    Log.e(TAG, "onResponse: " + e);
-//                }
                 try {
                     ArrayList<String> keyList = new ArrayList<>();
-                    JSONArray TeamData =response.getJSONArray("data");
+                    TeamData =response.getJSONArray("data");
                     Log.e(TAG, "onResponse:of team++> "+TeamData);
-                    JSONObject object;
-                    for (int i=0;i<TeamData.length();i++ ){
-                        object=TeamData.getJSONObject(i);
-                        HashMap hashMap=new HashMap();
-                        Iterator<String> keys = object.keys();
-                        while (keys.hasNext()){
-                            keyList.add(keys.next());
-                        }
-                        for (int j=0;j<TeamData.length();j++){
-                            Log.e(TAG, "team++>keyList:==>" + keyList.get(j) + "\n");
-                            hashMap.put(keyList.get(j), object.getString(keyList.get(j)));
-                            Log.e(TAG, "Team in for loop:" + keyList.get(j) + ":=>" + object.getString(keyList.get(j)));
-                        }
-                        hashMapArrayList.add(hashMap);
-                        Log.e(TAG, "Team map=>>"+hashMapArrayList);
-                    }
+
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -333,7 +310,7 @@ public class Detail extends AppCompatActivity {
                 progressDialog.setVisibility(View.INVISIBLE);
                 object = response.getJSONObject("entry_list");
                 //view pager
-                viewPagerAdapter=new ViewPagerAdapter(getSupportFragmentManager(),1,module,id,object,hashMapArrayList);
+                viewPagerAdapter=new ViewPagerAdapter(getSupportFragmentManager(),1,module,id,object,TeamData);
                 viewPager.setAdapter(viewPagerAdapter);
                 viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
             } catch (JSONException e) {
@@ -626,7 +603,7 @@ public class Detail extends AppCompatActivity {
                     object1.put("action", "show");
                     object1.put("module_name", mParam2);
                     object1.put("id", id);
-                    object1.put("select_fields", selectedfileds(module,databasehelper));
+                    object1.put("select_fields", selectedfileds(module,databasehelper,"detail"));
                     object1.put("select_relate_fields", new JSONArray());
                     object.put("rest_data", object1);
                     Log.e(TAG, "getBody: ody of request " + object);
@@ -888,14 +865,14 @@ public class Detail extends AppCompatActivity {
         dialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(false);
     }
 
-    public JSONArray selectedfileds(String module,Databasehelper databasehelper) {
+    public JSONArray selectedfileds(String module,Databasehelper databasehelper,String name) {
         String s;
         s = databasehelper.getlayoutdefs(module);
         JSONArray jsonArray = null;
         JSONObject object = null;
         try {
             object = new JSONObject(s);
-            jsonArray = object.getJSONArray("detail");
+            jsonArray = object.getJSONArray(name);
             Log.e("TAG", "selectedfield: from database " + jsonArray);
         } catch (JSONException e) {
             e.printStackTrace();

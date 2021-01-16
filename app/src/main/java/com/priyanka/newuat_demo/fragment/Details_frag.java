@@ -47,8 +47,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -98,15 +101,18 @@ public class Details_frag extends Fragment {
     ArrayList<String> arrayListnumbers,arrayListEmail,arrayListaddress;
     JSONArray details;
     Detail d;
-    ArrayList<HashMap<String,String>> hashMapArrayList;
+    JSONArray teamData;
 
-
-    public Details_frag(String module, String id, JSONObject object, ArrayList<HashMap<String, String>> hashMapArrayList) {
+    public Details_frag(String module, String id, JSONObject object, JSONArray teamData) {
         Log.e(TAG, "hey i am your Details_FRag" );
         this.module=module;
         this.id=id;
         this.object=object;
-        this.hashMapArrayList=hashMapArrayList;
+        this.teamData=teamData;
+    }
+
+    public Details_frag(String module) {
+        this.module=module;
     }
 
     @Override
@@ -136,7 +142,7 @@ public class Details_frag extends Fragment {
         params = new LinearLayout.LayoutParams(150, ActionBar.LayoutParams.MATCH_PARENT);
         params.setMargins(30,20,30,20);
 
-        details= d.selectedfileds(module,databasehelper);
+        details= d.selectedfileds(module,databasehelper,"detail");
         Log.e(TAG, "onCreate: details:"+details );
         params1 = new LinearLayout.LayoutParams(ActionBar.LayoutParams.MATCH_PARENT,ActionBar.LayoutParams.MATCH_PARENT);
         params1.setMargins(30,20,30,20);
@@ -154,7 +160,7 @@ public class Details_frag extends Fragment {
 
         // Here we are creating the layout of fragmnent create the structure
 
-        createLayout();
+        createLayout(details,getContext(),linearLayout);
 
         //this is for adding data
         fillData();
@@ -225,6 +231,10 @@ public class Details_frag extends Fragment {
                                                     textView.setText(jsonObject.getString("value"));
                                                     Linkify.addLinks(textView,Linkify.WEB_URLS);
 //                                                    textView.setMovementMethod(LinkMovementMethod.getInstance());
+                                                }else if (textView.getTag(R.id.type).equals("datetime")){
+                                                    Log.e(TAG, "fillData: you got data to type datetime");
+                                                    String date=formatDateTime(jsonObject.getString("value"));
+                                                    textView.setText(date);
                                                 }
                                                 else {
 //                                                    Log.e(TAG, "onCreateView: textview:" + textView.getText().toString() + " tag=>" + textView.getTag(R.id.key));
@@ -323,15 +333,19 @@ public class Details_frag extends Fragment {
     private String fetchTeamMemberName(Object value) {
         String name="" ;
         Log.e(TAG, "fetchTeamMemberName: "+value);
-        Log.e(TAG, "fetchTeamMemberName: "+hashMapArrayList);
-        Set<String> keySet=hashMap.keySet();
-        ArrayList<String> keyset=new ArrayList<>(keySet);
-        Collection<String> collection=hashMap.values();
-        ArrayList<String> dataset=new ArrayList<>(collection);
-        for (int i=0;i<keyset.size();i++){
-            Log.e(TAG, "fetchTeamMemberName: "+keySet+" Dataset:"+dataset);
-//            if (value.toString().equals())
+        Log.e(TAG, "fetchTeamMemberName: "+teamData);
+        try {
+            for (int i=0;i<teamData.length();i++){
+            JSONObject object=teamData.getJSONObject(i);
+            if (object.getString("id").equals(value)){
+                name=object.getString("name");
+            }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+
+
         return name;
     }
 
@@ -371,6 +385,24 @@ public class Details_frag extends Fragment {
         } catch (JSONException e) {
             e.printStackTrace();
         }
+    }
+
+    private String formatDateTime(String s) {
+        String inputPattern = "yyyy-MM-dd HH:mm:ss";
+        String outputPattern = "dd-MM-yyyy h:mm a";
+        SimpleDateFormat inputFormat = new SimpleDateFormat(inputPattern);
+        SimpleDateFormat outputFormat = new SimpleDateFormat(outputPattern);
+
+        Date date = null;
+        String str = null;
+
+        try {
+            date = inputFormat.parse(s);
+            str = outputFormat.format(date);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return str;
     }
 
     private void textArea(LinearLayout linearLayouthorizontal, String value) {
@@ -444,14 +476,21 @@ public class Details_frag extends Fragment {
         }
     }
 
-    private void createLayout(){
+    public void createLayout(JSONArray details,Context context,LinearLayout linearLayout){
         // this function is for creating over all Dynamic Layout with
        String key=null;
+
+        params = new LinearLayout.LayoutParams(150, ActionBar.LayoutParams.MATCH_PARENT);
+        params.setMargins(30,20,30,20);
+
+        params1 = new LinearLayout.LayoutParams(ActionBar.LayoutParams.MATCH_PARENT,ActionBar.LayoutParams.MATCH_PARENT);
+        params1.setMargins(30,20,30,20);
         for(int i=0;i<details.length();i++){
             try {
-                key=getDisplayNames(details.getString(i),"display_label");
+                key=getDisplayNames(details.getString(i),"display_label",context);
                 if (key!=null){
-                    String typr=getDisplayNames(details.getString(i),"type");
+                    String typr=getDisplayNames(details.getString(i),"type",context);
+//                    Log.e(TAG, "createLayout: this is the type you search for===> "+typr );
 
                     switch(typr){
                         case "text":
@@ -459,34 +498,35 @@ public class Details_frag extends Fragment {
 //                            LinearLayout linearLayout2 = new LinearLayout(getContext());
 //                            linearLayout2.setOrientation(LinearLayout.VERTICAL);
 //                            Log.e(TAG, "createLayout:key "+key);
-                            LinearLayout linearLayout1 = new LinearLayout(getContext());
+                            LinearLayout linearLayout1 = new LinearLayout(context);
                             linearLayout1.setOrientation(LinearLayout.HORIZONTAL);
-                            textView=new TextView(getContext());
+                            textView=new TextView(context);
                             textView.setLayoutParams(params);
                             textView.setText(key);
                             textView.setTag(null);
                             textView.setGravity(Gravity.CENTER);
-                            textView1=new TextView(getContext());
+                            textView1=new TextView(context);
                             textView1.setLayoutParams(params1);
 //                            textView1.setText(jsonObject.getString("value"));
                             textView1.setGravity(Gravity.CENTER);
                             textView1.setTag(R.id.key,details.getString(i));
+                            textView1.setTag(R.id.type,typr);
                             linearLayout1.addView(textView);
                             linearLayout1.addView(textView1);
                             linearLayout.addView(linearLayout1);
                             break;
                         case "relate":
-                            String module=getDisplayNames(details.getString(i),"module");
-                            LinearLayout linearLayout2 = new LinearLayout(getContext());
+                            String module=getDisplayNames(details.getString(i),"module",context);
+                            LinearLayout linearLayout2 = new LinearLayout(context);
                             linearLayout2.setOrientation(LinearLayout.VERTICAL);
-                            linearLayout1 = new LinearLayout(getContext());
+                            linearLayout1 = new LinearLayout(context);
                             linearLayout1.setOrientation(LinearLayout.HORIZONTAL);
-                            textView=new TextView(getContext());
+                            textView=new TextView(context);
                             textView.setLayoutParams(params);
                             textView.setText(key);
                             textView.setTag(null);
                             textView.setGravity(Gravity.CENTER);
-                            textView1=new TextView(getContext());
+                            textView1=new TextView(context);
                             textView1.setLayoutParams(params1);
                             textView1.setGravity(Gravity.CENTER);
                             textView1.setTag(R.id.key,details.getString(i));
@@ -506,13 +546,13 @@ public class Details_frag extends Fragment {
                             break;
                         case "multi-phone":
                         case "multi-email":
-                            linearLayout1=new LinearLayout(getContext());
-                            textView=new TextView(getContext());
+                            linearLayout1=new LinearLayout(context);
+                            textView=new TextView(context);
                             textView.setText(key);
                             textView.setTag(null);
                             textView.setLayoutParams(params);
                             linearLayout1.addView(textView);
-                            linearLayout2=new LinearLayout(getContext());
+                            linearLayout2=new LinearLayout(context);
                             linearLayout2.setTag(R.id.key,details.getString(i));
                             linearLayout2.setTag(R.id.type,typr);
                             linearLayout2.setLayoutParams(params1);
@@ -521,13 +561,14 @@ public class Details_frag extends Fragment {
 //                            Multifields("hiddenPhone","phone_number",key,Linkify.PHONE_NUMBERS);
                             break;
                         case "select":
-                            linearLayout1=new LinearLayout(getContext());
-                            textView=new TextView(getContext());
+                            linearLayout1=new LinearLayout(context);
+                            textView=new TextView(context);
                             textView.setText(key);
                             textView.setLayoutParams(params);
                             textView.setTag(null);
                             linearLayout1.addView(textView);
-                            textView1=new TextView(getContext());
+                            textView1=new TextView(context);
+                            textView1.setTag(R.id.type,typr);
                             textView1.setTag(R.id.key,details.getString(i));
                             textView1.setGravity(Gravity.CENTER);
                             textView1.setLayoutParams(params1);
@@ -535,16 +576,17 @@ public class Details_frag extends Fragment {
                             linearLayout.addView(linearLayout1);
                             break;
                         case "url":
-                            linearLayout1=new LinearLayout(getContext());
-                            textView=new TextView(getContext());
+                            linearLayout1=new LinearLayout(context);
+                            textView=new TextView(context);
                             textView.setLayoutParams(params);
                             textView.setTag(null);
                             textView.setGravity(Gravity.CENTER);
                             textView.setText(key);
                             linearLayout1.addView(textView);
-                            textView1=new TextView(getContext());
+                            textView1=new TextView(context);
                             textView1.setLayoutParams(params1);
                             textView1.setTag(R.id.key,details.getString(i));
+                            textView1.setTag(R.id.type,typr);
                             textView1.setGravity(Gravity.CENTER);
 //                            textView1.setMovementMethod(LinkMovementMethod.getInstance());
 //                            textView1.setText(jsonObject.getString("value"));
@@ -556,13 +598,13 @@ public class Details_frag extends Fragment {
                         case "comment":
                         case "multi-address":
                         case "multi-tag":
-                            linearLayout1=new LinearLayout(getContext());
-                            textView=new TextView(getContext());
+                            linearLayout1=new LinearLayout(context);
+                            textView=new TextView(context);
                             textView.setText(key);
                             textView.setTag(null);
                             textView.setLayoutParams(params);
                             linearLayout1.addView(textView);
-                            linearLayout2=new LinearLayout(getContext());
+                            linearLayout2=new LinearLayout(context);
                             linearLayout2.setTag(R.id.key,details.getString(i));
                             linearLayout2.setLayoutParams(params1);
                             linearLayout2.setTag(R.id.type,typr);
@@ -570,13 +612,13 @@ public class Details_frag extends Fragment {
                             linearLayout.addView(linearLayout1);
                             break;
                         case "datetime":
-                            linearLayout1=new LinearLayout(getContext());
-                            textView=new TextView(getContext());
+                            linearLayout1=new LinearLayout(context);
+                            textView=new TextView(context);
                             textView.setText(key);
                             textView.setTag(null);
                             textView.setLayoutParams(params);
                             linearLayout1.addView(textView);
-                            textView1=new TextView(getContext());
+                            textView1=new TextView(context);
                             textView1.setLayoutParams(params1);
                             textView1.setGravity(Gravity.CENTER);
                             textView1.setTag(R.id.key,details.getString(i));
@@ -685,7 +727,9 @@ public class Details_frag extends Fragment {
         MultiFieldAddLayout(key,phoneNumbers,arrayListnumbers);
      }
 
-    private String getDisplayNames(String key,String field) throws JSONException {
+    public String getDisplayNames(String key,String field,Context context) throws JSONException {
+        Log.e(TAG, "getDisplayNames: module"+module );
+        databasehelper=new Databasehelper(context);
         String fielddefs=databasehelper.getFielddefs(module);
         String fieldvalue = null;
 //        Log.e(TAG, "getDisplayNames:===> "+fielddefs );

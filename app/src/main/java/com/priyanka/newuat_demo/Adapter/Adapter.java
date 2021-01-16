@@ -100,7 +100,8 @@ public class Adapter extends ArrayAdapter<HashMap<String, String>> implements Ac
         account = new AccountFragment(mParam1);
         Log.e(TAG, "position=>" + position);
         HashMap<String, String> map = hashMapArrayList.get(position);
-        id=map.get("id");
+        viewHolder.id=map.get("id");
+        Log.e(TAG, "getView: this is id which is toubling uhhh:"+id);
         object1 = account.selectedfield(databasehelper, mParam1);
         Log.e(TAG, "getView:object1==> " + object1 + " param: " + mParam1);
         try {
@@ -111,21 +112,21 @@ public class Adapter extends ArrayAdapter<HashMap<String, String>> implements Ac
             displaytext5 = getdisplayname(object1.getString(4));
             Log.e(TAG, "getView:displaytext1: " + displaytext1);
             Log.e(TAG, "getView:object1.getString(4): " + object1.getString(4));
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        String user = null;
-        try {
-            user = object1.getString(4);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        if (user.endsWith("_id")) {
+            String user = null;
             try {
-                object1.put(4, "assigned_user_name");
+                user = object1.getString(4);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
+            if (user.endsWith("_id")) {
+                try {
+                    object1.put(4, "assigned_user_name");
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
 
         try {
@@ -227,9 +228,9 @@ public class Adapter extends ArrayAdapter<HashMap<String, String>> implements Ac
             @Override
             public void onClick(View v) {
                 Log.e(TAG, "onClick: hey you clicked card view " );
-                Log.e(TAG, "onClick: this is the id you search for ===>"+id );
+                Log.e(TAG, "onClick: this is the id you search for ===>"+viewHolder.id);
                 Intent i =new Intent(activity, Detail.class);
-                i.putExtra("id",id);
+                i.putExtra("id",viewHolder.id);
                 Log.e(TAG, "this is the module i was searching for :"+mParam1);
                 i.putExtra("module_name",mParam1);
                 context.startActivity(i);
@@ -260,6 +261,7 @@ public class Adapter extends ArrayAdapter<HashMap<String, String>> implements Ac
     }
 
     private class ItemViewHolder extends View {
+        String id;
         TextView textView1;
         TextView textView2;
         TextView textView3;
