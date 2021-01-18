@@ -15,15 +15,28 @@
 
         <!-- TODO: Update blank fragment layout -->
 
-
+<!--<LinearLayout-->
+<!--    android:layout_width="match_parent"-->
+<!--    android:layout_height="wrap_content"-->
+<!--    android:orientation="horizontal">-->
 <!--        <com.google.android.material.textfield.TextInputLayout-->
 <!--            android:layout_width="match_parent"-->
-<!--            android:layout_height="wrap_content">-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_weight="1">-->
 <!--            <com.google.android.material.textfield.TextInputEditText-->
 <!--                android:layout_width="match_parent"-->
 <!--                android:layout_height="wrap_content">-->
 
 <!--            </com.google.android.material.textfield.TextInputEditText>-->
 <!--        </com.google.android.material.textfield.TextInputLayout>-->
+<!--    <ImageView-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:src="@drawable/ic_baseline_add_24"/>-->
+<!--    <ImageView-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:src="@drawable/ic_baseline_more_vert_24"/>-->
+<!--</LinearLayout>-->
 
     </LinearLayout></androidx.core.widget.NestedScrollView>

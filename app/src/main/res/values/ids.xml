@@ -15,4 +15,6 @@
     <item name="key" type="id"/>
     <item name="type" type="id"/>
     <item name="required" type="id"/>
+    <item name="resource" type="id" />
+    <item name="tag" type="id" />
 </resources>
