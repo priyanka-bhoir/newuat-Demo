@@ -22,7 +22,9 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.navigation.NavigationView;
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import com.priyanka.newuat_demo.Database.Databasehelper;
+import com.priyanka.newuat_demo.Models.Dome;
 import com.priyanka.newuat_demo.Models.MobileLayout;
 import com.priyanka.newuat_demo.Models.module_pojo;
 import com.priyanka.newuat_demo.fragment.AccountFragment;
@@ -73,6 +75,7 @@ public class drawer extends AppCompatActivity {
     String TAG="Drawer class";
     MobileLayout mobileLayout;
     ProgressDialog progressDialog;
+    Dome dome;
 
 
 
@@ -359,6 +362,14 @@ public class drawer extends AppCompatActivity {
                         Log.e("TAG", "onResponse:layoutdefs "+jsonArray );
                         mobileLayout=new MobileLayout(module_name,module_label,jsonArray.toString(),jsonObject3.toString());
                         databasehelper.insertMobileLayout(mobileLayout);
+                    }
+                    JSONArray dome_list=response.getJSONArray("dom_list");
+                    for (int i=0;i<dome_list.length();i++){
+                        JSONObject jsonObject=dome_list.getJSONObject(i);
+                        String name=jsonObject.getString("dom_name");
+                        String value=jsonObject.getString("dom_values");
+                        dome=new Dome(name,value);
+                        databasehelper.insertDomData(dome);
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();

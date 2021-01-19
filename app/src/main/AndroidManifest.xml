@@ -22,7 +22,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.NewuatDemo">
-        <activity android:name=".CreateFeature"></activity>
+        <activity android:name=".RelateFieldSelection"></activity>
+        <activity android:name=".CreateFeature" />
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.
              (See the file "res/values/google_maps_api.xml").

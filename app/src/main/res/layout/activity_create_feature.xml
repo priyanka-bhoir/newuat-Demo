@@ -2,7 +2,18 @@
 <androidx.core.widget.NestedScrollView
     android:layout_height="match_parent"
     android:layout_width="match_parent"
+    android:id="@+id/nestedScroll"
     xmlns:android="http://schemas.android.com/apk/res/android">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+    <FrameLayout
+        android:id="@+id/frame1"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    </FrameLayout>
     <LinearLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
@@ -12,7 +23,6 @@
         android:id="@+id/activty_create_linear_layout"
         tools:context=".fragment.AccountFragment"
         android:orientation="vertical">
-
         <!-- TODO: Update blank fragment layout -->
 
 <!--<LinearLayout-->
@@ -38,5 +48,5 @@
 <!--        android:layout_height="wrap_content"-->
 <!--        android:src="@drawable/ic_baseline_more_vert_24"/>-->
 <!--</LinearLayout>-->
-
+    </LinearLayout>
     </LinearLayout></androidx.core.widget.NestedScrollView>

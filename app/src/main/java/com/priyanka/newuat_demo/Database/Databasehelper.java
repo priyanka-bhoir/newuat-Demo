@@ -9,6 +9,7 @@ import android.util.Log;
 
 import androidx.annotation.Nullable;
 
+import com.priyanka.newuat_demo.Models.Dome;
 import com.priyanka.newuat_demo.Models.GetEntry;
 import com.priyanka.newuat_demo.Models.MobileLayout;
 import com.priyanka.newuat_demo.Models.TeamData;
@@ -26,6 +27,7 @@ public class Databasehelper extends SQLiteOpenHelper {
     public static final String Table_GETENTRY_LIST="getentry";
     public static final String LOGIN_JSON="logindata";
     public static final String Table_TEAM="team";
+    public static final String Table_mobileLayout_Dome="dom_list";
 
     //for data members of table module
     public static final String ID="id";
@@ -52,6 +54,9 @@ public class Databasehelper extends SQLiteOpenHelper {
     public static final String NAME="name";
     public static final String DESCRIPTION="description";
 
+    //for Storing dome value of mobile layout for spinner
+    public static final String DOM_NAME="dom_name";
+    public static final String DOM_VALUE="dom_values";
     module_pojo data;
     MobileLayout mobileLayout;
     String TAG="Dabasehelper.class";
@@ -80,6 +85,9 @@ public class Databasehelper extends SQLiteOpenHelper {
         // this is for Team
         db.execSQL("create table "+Table_TEAM+"("+ID+" integer primary key, "+ID_TEAM+" text,"+CREATED_AT+" text,"+UPDATED_AT+" text,"+DELETED_AT+" text,"+NAME+" text,"+DESCRIPTION+" text)");
 
+        //this is for Dom value of mobile layout
+        db.execSQL("create table "+Table_mobileLayout_Dome+"("+ID+" integer primary key, "+DOM_NAME+" text,"+DOM_VALUE+" text)");
+
     }
 
     @Override
@@ -89,6 +97,7 @@ public class Databasehelper extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS "+Table_MOBILE_LAYOUT);
         db.execSQL("DROP TABLE IF EXISTS "+Table_GETENTRY_LIST);
         db.execSQL("DROP TABLE IF EXISTS "+Table_TEAM);
+        db.execSQL("DROP TABLE IF EXISTS "+Table_mobileLayout_Dome);
         onCreate(db);
     }
 
@@ -153,6 +162,14 @@ public class Databasehelper extends SQLiteOpenHelper {
 
     }
 
+    public void insertDomData(Dome dome){
+        ContentValues values=new ContentValues();
+        values.put(DOM_NAME,dome.getDomName());
+        values.put(DOM_VALUE,dome.getDomValue());
+        SQLiteDatabase db=this.getWritableDatabase();
+        db.insert(Table_mobileLayout_Dome,null,values);
+        Log.e(TAG, "insertDomData: Data inserted" );
+    }
     public boolean getValidation(String Table_name){
 
         //validation function
@@ -340,5 +357,17 @@ public class Databasehelper extends SQLiteOpenHelper {
     public String getFielddefs(String modulename){
         //these will fetch fielddefs from mobile layout
         return getdefs(modulename,FIELDDEFS);
+    }
+    public String fetchDomeValue(String name){
+        String abc="";
+        SQLiteDatabase db=getReadableDatabase();
+        String selection=DOM_NAME+"=?";
+        Cursor cursor=db.query(Table_mobileLayout_Dome,new String[]{DOM_VALUE},selection,new String[]{name},null,null,null);
+        if (cursor!=null){
+            cursor.moveToFirst();
+            abc=cursor.getString(0);
+//            Log.e(TAG, "getlayoutdefs:cursor "+cursor.getString(0));
+        }
+        return abc;
     }
 }
