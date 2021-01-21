@@ -17,4 +17,5 @@
     <item name="required" type="id"/>
     <item name="resource" type="id" />
     <item name="tag" type="id" />
+    <item name="flag" type="id" />
 </resources>

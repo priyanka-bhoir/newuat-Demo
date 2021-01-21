@@ -1,4 +1,4 @@
-package com.priyanka.newuat_demo;
+package com.priyanka.newuat_demo.SubModule;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -21,6 +21,8 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.priyanka.newuat_demo.Database.Databasehelper;
+import com.priyanka.newuat_demo.R;
+import com.priyanka.newuat_demo.SharedPrefrence;
 import com.priyanka.newuat_demo.singletone.variables;
 
 import org.json.JSONArray;
@@ -56,6 +58,7 @@ public class RelateFieldSelection extends AppCompatActivity implements com.priya
         //intent
         Intent intent=getIntent();
         module=intent.getStringExtra("module");
+        name=intent.getStringExtra("name");
 
 
         Log.e(TAG, "onCreate: "+module);
@@ -100,7 +103,7 @@ public class RelateFieldSelection extends AppCompatActivity implements com.priya
                     }
                     map.add(hashMap);
                     Log.e(TAG, "onResponse: "+map );
-                    adapter= new com.priyanka.newuat_demo.Adapter.Adapter(getApplicationContext(),10,map,mParam1,this);
+                    adapter= new com.priyanka.newuat_demo.Adapter.Adapter(getApplicationContext(),10,map,mParam1,this,name);
                     listView.setAdapter((ListAdapter) adapter);
                 }
             } catch (JSONException e) {

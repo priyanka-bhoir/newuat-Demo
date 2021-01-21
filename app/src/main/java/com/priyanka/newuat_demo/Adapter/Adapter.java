@@ -33,11 +33,9 @@ import androidx.core.app.ActivityCompat;
 
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
-import com.priyanka.newuat_demo.CreateFeature;
 import com.priyanka.newuat_demo.Detail;
 import com.priyanka.newuat_demo.Database.Databasehelper;
 import com.priyanka.newuat_demo.R;
-import com.priyanka.newuat_demo.RelateFieldSelection;
 import com.priyanka.newuat_demo.fragment.AccountFragment;
 
 import org.json.JSONArray;
@@ -51,9 +49,7 @@ import java.util.List;
 
 import static androidx.core.app.ActivityCompat.requestPermissions;
 import static androidx.core.app.ActivityCompat.shouldShowRequestPermissionRationale;
-import static androidx.core.app.ActivityCompat.startActivityForResult;
 import static androidx.core.content.ContextCompat.checkSelfPermission;
-import static androidx.core.content.ContextCompat.startActivity;
 
 public class Adapter extends ArrayAdapter<HashMap<String, String>> implements ActivityCompat.OnRequestPermissionsResultCallback {
 
@@ -65,6 +61,21 @@ public class Adapter extends ArrayAdapter<HashMap<String, String>> implements Ac
     Activity activity;
     int resource;
     OnItemClickLister mlistener;
+    String flag;
+
+    public Adapter(Context applicationContext, int i, ArrayList<HashMap<String, String>> map, String mParam1, Activity activity, String flag) {
+        // used for multi relate field
+
+        super(applicationContext, i);
+        this.context = applicationContext;
+        this.hashMapArrayList = map;
+        this.mParam1 = mParam1;
+        this.activity = activity;
+        this.resource=i;
+        this.flag=flag;
+
+    }
+
 
     //interfaces
     public interface OnItemClickLister{
@@ -240,6 +251,7 @@ public class Adapter extends ArrayAdapter<HashMap<String, String>> implements Ac
         viewHolder.cardView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
                 if (resource==20){
                     Log.e(TAG, "onClick: hey you clicked card view " );
                     Log.e(TAG, "onClick: this is the id you search for ===>"+viewHolder.id);
@@ -250,11 +262,13 @@ public class Adapter extends ArrayAdapter<HashMap<String, String>> implements Ac
                     context.startActivity(i);
                 }
                 else if (resource==10){
+
                     Log.e(TAG, "onClick: hey you clicked me==:)"+ viewHolder.textView1.getText().toString());
                     Intent intent=new Intent();
                     String s=viewHolder.textView1.getText().toString().substring(5);
                     intent.putExtra("name",s);
                     intent.putExtra("module",mParam1);
+                    intent.putExtra("flag",flag);
 //                    startActivityForResult(activity,intent,10,null);
                     activity.setResult(Activity.RESULT_OK,intent);
                     activity.finish();
