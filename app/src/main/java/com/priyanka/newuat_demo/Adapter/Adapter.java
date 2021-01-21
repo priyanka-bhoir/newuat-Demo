@@ -33,9 +33,11 @@ import androidx.core.app.ActivityCompat;
 
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
+import com.priyanka.newuat_demo.CreateFeature;
 import com.priyanka.newuat_demo.Detail;
 import com.priyanka.newuat_demo.Database.Databasehelper;
 import com.priyanka.newuat_demo.R;
+import com.priyanka.newuat_demo.RelateFieldSelection;
 import com.priyanka.newuat_demo.fragment.AccountFragment;
 
 import org.json.JSONArray;
@@ -49,7 +51,9 @@ import java.util.List;
 
 import static androidx.core.app.ActivityCompat.requestPermissions;
 import static androidx.core.app.ActivityCompat.shouldShowRequestPermissionRationale;
+import static androidx.core.app.ActivityCompat.startActivityForResult;
 import static androidx.core.content.ContextCompat.checkSelfPermission;
+import static androidx.core.content.ContextCompat.startActivity;
 
 public class Adapter extends ArrayAdapter<HashMap<String, String>> implements ActivityCompat.OnRequestPermissionsResultCallback {
 
@@ -59,6 +63,14 @@ public class Adapter extends ArrayAdapter<HashMap<String, String>> implements Ac
     JSONArray object1;
     AlertDialog dialog;
     Activity activity;
+    int resource;
+    OnItemClickLister mlistener;
+
+    //interfaces
+    public interface OnItemClickLister{
+        void onItemClicked(String name);
+    }
+
 
     public ArrayList<HashMap<String, String>> hashMapArrayList;
     Context context;
@@ -78,6 +90,7 @@ public class Adapter extends ArrayAdapter<HashMap<String, String>> implements Ac
         this.hashMapArrayList = map;
         this.mParam1 = s;
         this.activity = activity;
+        this.resource=resource;
     }
 
     @Override
@@ -227,13 +240,29 @@ public class Adapter extends ArrayAdapter<HashMap<String, String>> implements Ac
         viewHolder.cardView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.e(TAG, "onClick: hey you clicked card view " );
-                Log.e(TAG, "onClick: this is the id you search for ===>"+viewHolder.id);
-                Intent i =new Intent(activity, Detail.class);
-                i.putExtra("id",viewHolder.id);
-                Log.e(TAG, "this is the module i was searching for :"+mParam1);
-                i.putExtra("module_name",mParam1);
-                context.startActivity(i);
+                if (resource==20){
+                    Log.e(TAG, "onClick: hey you clicked card view " );
+                    Log.e(TAG, "onClick: this is the id you search for ===>"+viewHolder.id);
+                    Intent i =new Intent(activity, Detail.class);
+                    i.putExtra("id",viewHolder.id);
+                    Log.e(TAG, "this is the module i was searching for :"+mParam1);
+                    i.putExtra("module_name",mParam1);
+                    context.startActivity(i);
+                }
+                else if (resource==10){
+                    Log.e(TAG, "onClick: hey you clicked me==:)"+ viewHolder.textView1.getText().toString());
+                    Intent intent=new Intent();
+                    String s=viewHolder.textView1.getText().toString().substring(5);
+                    intent.putExtra("name",s);
+                    intent.putExtra("module",mParam1);
+//                    startActivityForResult(activity,intent,10,null);
+                    activity.setResult(Activity.RESULT_OK,intent);
+                    activity.finish();
+
+                    if (mlistener != null){
+                        mlistener.onItemClicked( viewHolder.textView1.getText().toString());
+                    }
+                }
             }
         });
 

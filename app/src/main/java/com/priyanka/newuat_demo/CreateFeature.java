@@ -1,5 +1,6 @@
 package com.priyanka.newuat_demo;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
@@ -13,6 +14,7 @@ import android.text.InputType;
 import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -21,6 +23,7 @@ import android.widget.TextView;
 
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
+import com.priyanka.newuat_demo.Adapter.Adapter;
 import com.priyanka.newuat_demo.Database.Databasehelper;
 import com.priyanka.newuat_demo.fragment.Details_frag;
 import com.priyanka.newuat_demo.fragment.RelatefieldCreate;
@@ -36,12 +39,13 @@ import java.util.ArrayList;
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 
-public class CreateFeature extends AppCompatActivity {
+public class CreateFeature extends AppCompatActivity  {
 
     private static final String TAG = "CreateFeature";
 
     // Variables
     String module;
+    String name=null;
 
     //Databse
     Databasehelper databasehelper;
@@ -63,6 +67,14 @@ public class CreateFeature extends AppCompatActivity {
 
     TextInputLayout textInputLayout;
 
+    Adapter.OnItemClickLister mlistener;
+
+
+    //Interfaces
+    public void setOnItemClickListener(Adapter.OnItemClickLister listener){
+        mlistener=listener;
+    }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,8 +82,15 @@ public class CreateFeature extends AppCompatActivity {
         setContentView(R.layout.activity_create_feature);
         Log.e(TAG, "onCreate: " );
 
+        //intent
         Intent  i=getIntent();
         module=i.getStringExtra("module");
+        try {
+            name=i.getStringExtra("name");
+            Log.e(TAG, "onCreate: RelateFieldSelection "+name);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         //Database
         databasehelper=new Databasehelper(getApplicationContext());
@@ -140,11 +159,11 @@ public class CreateFeature extends AppCompatActivity {
                             break;
                         case "multi-phone":
                             linearLayout.addView(linearLayout1);
-                            createMultiField(linearLayout1,key,typr,required,InputType.TYPE_CLASS_NUMBER,textinputparams,edittxtparams);
+                            createMultiField(linearLayout1,key,typr,required,InputType.TYPE_CLASS_NUMBER);
                             break;
                         case "multi-email":
                             linearLayout.addView(linearLayout1);
-                            createMultiField(linearLayout1,key,typr,required,InputType.TYPE_TEXT_VARIATION_WEB_EMAIL_ADDRESS,textinputparams,edittxtparams);
+                            createMultiField(linearLayout1,key,typr,required,InputType.TYPE_TEXT_VARIATION_WEB_EMAIL_ADDRESS);
                             break;
                         case "select":
                             String options=details_frag.getDisplayNames(details.getString(i),"options",context);
@@ -154,6 +173,11 @@ public class CreateFeature extends AppCompatActivity {
                         case "comment":
                             EditText textView=new EditText(linearLayout.getContext());
                             textView.setHint(key);
+                            textView.setTag(R.id.key,key);
+                            textView.setTag(R.id.type,typr);
+                            module="";
+                            textView.setTag(R.id.module,module);
+                            textView.setTag(R.id.required,required);
                             LinearLayout.LayoutParams params=new LinearLayout.LayoutParams(MATCH_PARENT,WRAP_CONTENT);
                             params.setMargins(15,10,15,10);
                             textView.setLayoutParams(params);
@@ -172,6 +196,9 @@ public class CreateFeature extends AppCompatActivity {
                         case "datetime":
                             createDate(linearLayout,key,typr,required);
                             break;
+                        case "text-relationship":
+                            Log.e(TAG, "createLayout: i am your text relationship"+key );
+                            break;
                         default:
 
                     }
@@ -187,27 +214,50 @@ public class CreateFeature extends AppCompatActivity {
         LinearLayout.LayoutParams params=new LinearLayout.LayoutParams(MATCH_PARENT,WRAP_CONTENT);
         params.setMargins(15,10,15,10);
 
-        EditText editText=new EditText(linearLayout.getContext());
-        editText.setLayoutParams(params);
-        editText.setHint(key);
-        linearLayout.addView(editText);
+
 
         switch (string) {
             case "assigned_user_id":
                 //this is for user
-//                editText.set
+                AutoCompleteTextView autoCompleteTextView=new AutoCompleteTextView(linearLayout.getContext());
+                autoCompleteTextView.setLayoutParams(params);
+                autoCompleteTextView.setHint(key);
+                autoCompleteTextView.setTag(R.id.key,key);
+                autoCompleteTextView.setTag(R.id.type,typr);
+                // fetch names of team members
+                ArrayList<String> arrayList = databasehelper.fetchAllMemberNames();
+                Log.e(TAG, "relateData: "+arrayList);
+                ArrayAdapter<String> arrayAdapter =new ArrayAdapter<String>(this,android.R.layout.simple_dropdown_item_1line,arrayList);
+                autoCompleteTextView.setThreshold(1);
+                autoCompleteTextView.setAdapter(arrayAdapter);
+                linearLayout.addView(autoCompleteTextView);
                 break;
             case "team_id":
                 //this is for team members
+                LinearLayout linearLayout1=new LinearLayout(CreateFeature.this);
+                linearLayout1.setOrientation(LinearLayout.VERTICAL);
+                linearLayout.addView(linearLayout1);
+                createMultiField(linearLayout1,key,typr,required,InputType.TYPE_CLASS_TEXT);
 
                 break;
             default:
+                EditText editText=new EditText(linearLayout.getContext());
+                editText.setLayoutParams(params);
+                editText.setHint(key);
+                editText.setTag(R.id.key,key);
+                editText.setTag(R.id.type,typr);
+                editText.setTag(R.id.required,required);
+                editText.setTag(R.id.module,module);
+                linearLayout.addView(editText);
                 editText.setFocusable(false);
+                if (mlistener!=null){
+                    editText.setText(name);
+                }
                 editText.setOnClickListener(v -> {
                     Log.e(TAG, "onClick: this is default case of fraagmnet==>"+module);
-                    Intent intent=new Intent(this,RelateFieldSelection.class);
+                    Intent intent=new Intent(CreateFeature.this,RelateFieldSelection.class);
                     intent.putExtra("module",module);
-                    startActivity(intent);
+                    startActivityForResult(intent,10);
                 });
             }
 
@@ -312,10 +362,14 @@ public class CreateFeature extends AppCompatActivity {
 
     }
 
-    private void createMultiField(LinearLayout linearLayout, String key, String typr, String required, int typeClass, LinearLayout.LayoutParams textinputparams, LinearLayout.LayoutParams edittxtparams) {
+    private void createMultiField(LinearLayout linearLayout, String key, String typr, String required, int typeClass) {
         LinearLayout linearLayout1=new LinearLayout(linearLayout.getContext());
         linearLayout1.setOrientation(LinearLayout.HORIZONTAL);
         linearLayout1.setLayoutParams(new LinearLayout.LayoutParams(MATCH_PARENT,WRAP_CONTENT));
+        TextInputLayout.LayoutParams textinputparams = new TextInputLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT);
+        textinputparams.setMargins(10,5,10,5);
+        TextInputLayout.LayoutParams edittxtparams = new LinearLayout.LayoutParams(MATCH_PARENT,MATCH_PARENT);
+        edittxtparams.setMargins(10,5,0,5);
 //                            Log.e(TAG, "createLayout: linearLayout.getWidth(): "+ linearLayout.getWidth());
         textInputLayout=new TextInputLayout(linearLayout1.getContext());
         textinputparams.weight=1;
@@ -325,6 +379,10 @@ public class CreateFeature extends AppCompatActivity {
         textInputEditText.setTag(R.id.type,typr);
         textInputEditText.setTag(R.id.key,key);
         textInputEditText.setTag(R.id.required,required);
+        textInputEditText.setFocusable(true);
+        if (key.equals("Team")){
+            textInputEditText.setFocusable(false);
+        }
         textInputEditText.setInputType(typeClass);
         textInputEditText.setFocusable(true);
         if (key.equals("Phone")){
@@ -392,7 +450,7 @@ public class CreateFeature extends AppCompatActivity {
                 Log.e(TAG, "createMultiField:these are my child's linear Layout==> "+linearLayout.getChildCount());
                 if (!textInputEditText.getText().toString().isEmpty()) {
                     Log.e(TAG, "onClick: this is your edit text text+++>> " + textInputEditText.getText());
-                    createMultiField(linearLayout, key, typr, required, typeClass, textinputparams, edittxtparams);
+                    createMultiField(linearLayout, key, typr, required, typeClass);
                 } else {
                     textInputEditText.setError("Empty");
                     textInputEditText.setFocusable(true);
@@ -406,7 +464,90 @@ public class CreateFeature extends AppCompatActivity {
             e.printStackTrace();
         }
     });
+    textInputEditText.setOnClickListener(new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            Intent intent=new Intent(CreateFeature.this,RelateFieldSelection.class);
+            intent.putExtra("module","Team");
+            startActivityForResult(intent,11);
+        }
+    });
     }
 
 
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        Log.e(TAG, "onActivityResult:ohh yeah activity came back " );
+        if (requestCode ==10){
+            if (resultCode==RESULT_OK){
+                name=data.getStringExtra("name");
+                module=data.getStringExtra("module");
+                Log.e(TAG, "onActivityResult: "+ name+"|| "+module);
+                // loop through the existing layout and set text at relate field
+                String module1=databasehelper.getBackendname(module);
+                setRelatedata(name, module1);
+
+            }
+        }else if (requestCode==11){
+            if (resultCode==RESULT_OK){
+                name=data.getStringExtra("name");
+                module=data.getStringExtra("module");
+                Log.e(TAG, "onActivityResult: "+ name+"|| "+module);
+                // loop through the existing layout and set text at relate field
+                setRelatedataTeam(name, "Accounts");
+
+            }
+        }
+
+    }
+
+    private void setRelatedataTeam(String name, String accounts) {
+        for (int i=0;i<linearLayout.getChildCount();i++){
+            if (linearLayout.getChildAt(i) instanceof LinearLayout){
+                LinearLayout linearLayout1= (LinearLayout) linearLayout.getChildAt(i);
+                for (int j=0;j<linearLayout1.getChildCount();j++){
+                    Log.e(TAG, "setRelatedataTeam:linearLayout1 "+linearLayout1.getChildCount() );
+                    if (linearLayout1.getChildAt(j) instanceof LinearLayout){
+//                        LinearLayout linearLayout2= (LinearLayout) linearLayout1.getChildAt(j);
+//                        for (int k=0;k<linearLayout2.getChildCount();k++){
+//                            Log.e(TAG, "setRelatedataTeam: linearLayout2"+linearLayout2.getChildCount());
+                            if (linearLayout1.getChildAt(j) instanceof TextInputLayout){
+                                TextInputLayout textInputLayout= (TextInputLayout) linearLayout1.getChildAt(j);
+                                for(int l=0;l<textInputLayout.getChildCount();l++){
+                                    if (textInputLayout.getChildAt(l) instanceof TextInputEditText){
+                                        TextInputEditText textInputEditText= (TextInputEditText) textInputLayout.getChildAt(l);
+                                        if (textInputEditText.getTag(R.id.type).equals("relate")){
+                                            Log.e(TAG, "setRelatedata:you got edit text "+name );
+                                            textInputEditText.setText(name);
+                                        }
+                                    }
+                                }
+                            }
+//                        }
+                    }
+                }
+            }
+        }
+    }
+
+
+    private void setRelatedata(String name, String module) {
+
+        for(int i=0;i<linearLayout.getChildCount();i++){
+           if (linearLayout.getChildAt(i) instanceof EditText){
+               EditText editText= (EditText) linearLayout.getChildAt(i);
+               try {
+                   Log.e(TAG, "setRelatedata: "+editText.getTag(R.id.key));
+                   if (editText.getTag(R.id.type).equals("relate")&&editText.getTag(R.id.module).equals(module)){
+                       editText.setText(name);
+                       Log.e(TAG, "setRelatedata: hey you got an edit txt" +editText.getTag(R.id.key));
+                   }
+               } catch (Exception e) {
+                   e.printStackTrace();
+               }
+           }
+        }
+    }
 }

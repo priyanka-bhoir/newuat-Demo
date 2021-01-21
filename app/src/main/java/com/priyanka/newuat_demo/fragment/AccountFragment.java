@@ -198,7 +198,7 @@ public class AccountFragment extends Fragment {
                             String deleted_at=object.getString("deleted_at");
                             String name=object.getString("name");
                             String description=object.getString("description");
-//                            Log.e(TAG, "onResponse: TEAMDATA "+id+"name"+name );
+                            Log.e(TAG, "onResponse: TEAMDATA "+id+"name"+name );
                             teamData=new TeamData(id,created_at,updated_at,deleted_at,name,description);
                             Log.e(TAG, "onResponse: here we are inserting into team table" );
                             databasehelper.insertTeamMember(teamData);
@@ -215,9 +215,9 @@ public class AccountFragment extends Fragment {
                             keyList.add(keys.next());
                         }
                         for (int j = 0; j < object.length(); j++) {
-                            Log.e(TAG, "keyList:==>" + keyList.get(i) + "\n");
+//                            Log.e(TAG, "keyList:==>" + keyList.get(i) + "\n");
                             hashMap.put(keyList.get(j), object.getString(keyList.get(j)));
-                            Log.e(TAG, "in for loop:" + keyList.get(j) + ":=>" + object.getString(keyList.get(j)));
+//                            Log.e(TAG, "in for loop:" + keyList.get(j) + ":=>" + object.getString(keyList.get(j)));
                         }
                         Log.e(TAG, "onResponse:object in for loop " + object);
                         map.add(hashMap);

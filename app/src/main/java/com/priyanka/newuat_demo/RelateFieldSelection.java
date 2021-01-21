@@ -1,11 +1,15 @@
 package com.priyanka.newuat_demo;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.Instrumentation;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Adapter;
+import android.widget.ListAdapter;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import com.android.volley.AuthFailureError;
@@ -23,10 +27,12 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
-public class RelateFieldSelection extends AppCompatActivity {
+public class RelateFieldSelection extends AppCompatActivity implements com.priyanka.newuat_demo.Adapter.Adapter.OnItemClickLister{
 
     String module;
     private String TAG="RelateFieldSelection";
@@ -36,6 +42,10 @@ public class RelateFieldSelection extends AppCompatActivity {
     String auth;
     String mParam1;
     Adapter adapter;
+    ListView listView;
+    ArrayList<HashMap<String, String>> map;
+    String name;
+
 
 
     @Override
@@ -46,47 +56,59 @@ public class RelateFieldSelection extends AppCompatActivity {
         //intent
         Intent intent=getIntent();
         module=intent.getStringExtra("module");
+
+
         Log.e(TAG, "onCreate: "+module);
 
         //DataClass initialization
         databasehelper=new Databasehelper(getApplicationContext());
+        listView=findViewById(R.id.listView);
+        map = new ArrayList<>();
 
-
-        mParam1=databasehelper.getFrontEndname(module);
-
+        if (module.equals("Team")) {
+            mParam1="Accounts";
+        }else {
+            mParam1 = databasehelper.getFrontEndname(module);
+        }
         prefrence=new SharedPrefrence(getApplicationContext());
         url=prefrence.getURl()+ variables.version+variables.URL_GETENTRY_LIST;
         auth=variables.BEARER+prefrence.getToken();
         databasehelper=new Databasehelper(getApplicationContext());
+
+
 
         Request(module);
 
     }
     void Request(String module){
         Log.e(TAG, "Request: this is your url"+url );
-        JsonObjectRequest request=new JsonObjectRequest(Request.Method.POST, url, null, new Response.Listener<JSONObject>() {
-            @Override
-            public void onResponse(JSONObject response) {
-                Log.e(TAG, "onResponse: "+response );
-                try {
-                    JSONArray jsonArray=response.getJSONArray("data");
-                    for (int i=0;i<jsonArray.length();i++){
-                        JSONObject jsonObject=jsonArray.getJSONObject(i);
-
+        JsonObjectRequest request=new JsonObjectRequest(Request.Method.POST, url, null, response -> {
+            Log.e(TAG, "onResponse: "+response );
+            try {
+                ArrayList<String> keyList = new ArrayList<>();
+                JSONArray jsonArray=response.getJSONArray("data");
+                for (int i=0;i<jsonArray.length();i++){
+                    JSONObject jsonObject=jsonArray.getJSONObject(i);
+                    HashMap hashMap=new HashMap();
+                    Iterator<String> keys=jsonObject.keys();
+                    while (keys.hasNext()){
+                        keyList.add(keys.next());
                     }
-                } catch (JSONException e) {
-                    e.printStackTrace();
+                    for (int j=0;j<jsonObject.length();j++){
+                        hashMap.put(keyList.get(j),jsonObject.getString(keyList.get(j)));
+//                            Log.e(TAG, "in for loop:" + keyList.get(j) + ":=>" + jsonObject.getString(keyList.get(j)));
+                    }
+                    map.add(hashMap);
+                    Log.e(TAG, "onResponse: "+map );
+                    adapter= new com.priyanka.newuat_demo.Adapter.Adapter(getApplicationContext(),10,map,mParam1,this);
+                    listView.setAdapter((ListAdapter) adapter);
                 }
+            } catch (JSONException e) {
+                e.printStackTrace();
             }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Log.e(TAG, "onErrorResponse: "+error );
-            }
-        }){
+        }, error -> Log.e(TAG, "onErrorResponse: "+error )){
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
-//                return super.getHeaders();
                 HashMap headers = new HashMap();
                 headers.put("Content-Type", "application/json");
                 headers.put("Accept", "application/json");
@@ -141,5 +163,11 @@ public class RelateFieldSelection extends AppCompatActivity {
             e.printStackTrace();
         }
         return jsonArray;
+    }
+
+    @Override
+    public void onItemClicked(String name) {
+        this.name=name;
+        this.finish();
     }
 }

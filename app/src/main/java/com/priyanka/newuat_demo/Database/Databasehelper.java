@@ -317,23 +317,38 @@ public class Databasehelper extends SQLiteOpenHelper {
         }
         return display_label;
     }
+
+    public ArrayList<String> fetchAllMemberNames(){
+       ArrayList<String> a = new ArrayList<>();
+       SQLiteDatabase db=getReadableDatabase();
+       String query="select * FROM "+ Table_TEAM;
+       Cursor cursor=db.rawQuery(query,null);
+        Log.e(TAG, "fetchAllMemberNames: "+cursor.getCount());
+        if (cursor.moveToFirst()){
+            do{
+                String name=cursor.getString(cursor.getColumnIndex(NAME));
+                a.add(name);
+            }while (cursor.moveToNext());
+        }
+       return a;
+    }
+
     public String fetchTeamName(String value) {
         String abc="";
 
-        String query="select * FROM "+ Table_TEAM;
-
+//        String query="select * FROM "+ Table_TEAM;
         SQLiteDatabase db=getReadableDatabase();
-        Log.e(TAG, "fetchTeamName: "+value);
-        Cursor cursor=db.rawQuery(query,null);
-        Log.e(TAG, "fetchTeamName: cursor.getCount()==>"+cursor.getCount() );
-//        String selection = NAME+ "=?" ;
-//        Cursor cursor=db.query(Table_TEAM,new String[]{ID_TEAM},selection,new String[]{value},null,null,null);
-//        if (cursor!=null){
-//            cursor.moveToFirst();
-//            abc=cursor.getString(cursor.getColumnIndex(NAME));
-//            Log.e(TAG, "getlayoutdefs:cursor "+cursor.getString(cursor.getColumnIndex(NAME)));
-//        }
-//        Log.e(TAG, "fetchTeamName: "+abc );
+//        Log.e(TAG, "fetchTeamName: "+value);
+//        Cursor cursor=db.rawQuery(query,null);
+//        Log.e(TAG, "fetchTeamName: cursor.getCount()==>"+cursor.getCount() );
+        String selection = NAME+ "=?" ;
+        Cursor cursor=db.query(Table_TEAM,new String[]{ID_TEAM},selection,new String[]{value},null,null,null);
+        if (cursor!=null){
+            cursor.moveToFirst();
+            abc=cursor.getString(cursor.getColumnIndex(NAME));
+            Log.e(TAG, "getlayoutdefs:cursor "+cursor.getString(cursor.getColumnIndex(NAME)));
+        }
+        Log.e(TAG, "fetchTeamName: "+abc );
         return abc;
     }
     public String getdefs(String module,String field){
