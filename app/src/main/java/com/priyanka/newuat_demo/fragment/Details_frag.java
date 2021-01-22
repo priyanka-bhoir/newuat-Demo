@@ -728,7 +728,7 @@ public class Details_frag extends Fragment {
      }
 
     public String getDisplayNames(String key,String field,Context context) throws JSONException {
-        Log.e(TAG, "getDisplayNames: module"+module );
+//        Log.e(TAG, "getDisplayNames: module"+module );
         databasehelper=new Databasehelper(context);
         String fielddefs=databasehelper.getFielddefs(module);
         String fieldvalue = null;

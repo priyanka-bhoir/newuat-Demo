@@ -1,4 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_height="match_parent"
+    android:layout_width="match_parent">
+<!--<com.google.android.material.appbar.AppBarLayout android:layout_width="match_parent"-->
+<!--    android:layout_height="wrap_content"-->
+<!--    xmlns:app="http://schemas.android.com/apk/res-auto"-->
+<!--    xmlns:android="http://schemas.android.com/apk/res/android">-->
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/create_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/colorPrimary"
+         />
+
+<!--</com.google.android.material.appbar.AppBarLayout>-->
 <androidx.core.widget.NestedScrollView
     android:layout_height="match_parent"
     android:layout_width="match_parent"
@@ -49,4 +67,4 @@
 <!--        android:src="@drawable/ic_baseline_more_vert_24"/>-->
 <!--</LinearLayout>-->
     </LinearLayout>
-    </LinearLayout></androidx.core.widget.NestedScrollView>
+    </LinearLayout></androidx.core.widget.NestedScrollView></LinearLayout>

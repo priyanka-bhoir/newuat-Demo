@@ -276,6 +276,14 @@ public class Adapter extends ArrayAdapter<HashMap<String, String>> implements Ac
                     if (mlistener != null){
                         mlistener.onItemClicked( viewHolder.textView1.getText().toString());
                     }
+                }else if (resource==12){
+                    Intent intent=new Intent();
+                    String s=viewHolder.textView1.getText().toString().substring(5);
+                    intent.putExtra("name",s);
+                    intent.putExtra("module",mParam1);
+
+                    activity.setResult(Activity.RESULT_OK,intent);
+                    activity.finish();
                 }
             }
         });
