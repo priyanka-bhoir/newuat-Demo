@@ -19,4 +19,5 @@
     <item name="tag" type="id" />
     <item name="flag" type="id" />
     <item name="name" type="id"/>
+    <item name="option" type="id" />
 </resources>

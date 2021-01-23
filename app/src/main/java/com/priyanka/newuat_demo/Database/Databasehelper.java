@@ -318,16 +318,17 @@ public class Databasehelper extends SQLiteOpenHelper {
         return display_label;
     }
 
-    public ArrayList<String> fetchAllMemberNames(){
-       ArrayList<String> a = new ArrayList<>();
+    public ArrayList<TeamData> fetchAllMemberNames(){
+       ArrayList<TeamData> a = new ArrayList<>();
        SQLiteDatabase db=getReadableDatabase();
        String query="select * FROM "+ Table_TEAM;
        Cursor cursor=db.rawQuery(query,null);
         Log.e(TAG, "fetchAllMemberNames: "+cursor.getCount());
         if (cursor.moveToFirst()){
             do{
+                String id=cursor.getString(cursor.getColumnIndex(ID_TEAM));
                 String name=cursor.getString(cursor.getColumnIndex(NAME));
-                a.add(name);
+                a.add(new TeamData(id,name));
             }while (cursor.moveToNext());
         }
        return a;
@@ -381,8 +382,21 @@ public class Databasehelper extends SQLiteOpenHelper {
         if (cursor!=null){
             cursor.moveToFirst();
             abc=cursor.getString(0);
-//            Log.e(TAG, "getlayoutdefs:cursor "+cursor.getString(0));
+//            Log.e(TAG, "fetchDomeValue:cursor "+cursor.getString(0));
         }
         return abc;
     }
+//    public String fetchDomeName(String name){
+//        Log.e(TAG, "fetchDomeName: "+name );
+//        String abc="";
+//        SQLiteDatabase db=getReadableDatabase();
+//        String selection=DOM_VALUE+"=?";
+//        Cursor cursor=db.query(Table_mobileLayout_Dome,new String[]{DOM_NAME},selection,new String[]{name},null,null,null);
+//        Log.e(TAG, "fetchDomeName:cursor==> "+cursor.getCount());
+//        if (cursor!=null){
+//            cursor.moveToFirst();
+//            abc=cursor.getString(cursor.getColumnIndex(DOM_NAME));
+//        }
+//        return abc;
+//    }
 }

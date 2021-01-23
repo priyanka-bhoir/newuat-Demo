@@ -54,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
         button=findViewById(R.id.button);
         checkBox=findViewById(R.id.checkBox);
 
-//        startActivity(new Intent(this,drawer.class));
+//        startActivity(new Intent(this,CreateFeature.class));
         
         prefrence=new SharedPrefrence(getApplicationContext());
         databasehelper=new Databasehelper(getApplicationContext());
