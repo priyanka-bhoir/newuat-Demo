@@ -253,6 +253,7 @@ public class Adapter extends ArrayAdapter<HashMap<String, String>> implements Ac
             public void onClick(View v) {
 
                 if (resource==20){
+                    Log.e(TAG, "onClick: requestcode 20" );
                     Log.e(TAG, "onClick: hey you clicked card view " );
                     Log.e(TAG, "onClick: this is the id you search for ===>"+viewHolder.id);
                     Intent i =new Intent(activity, Detail.class);
@@ -263,12 +264,16 @@ public class Adapter extends ArrayAdapter<HashMap<String, String>> implements Ac
                 }
                 else if (resource==10){
 
+                    //default case of relate field
+                    Log.e(TAG, "onClick: request code 10" );
                     Log.e(TAG, "onClick: hey you clicked me==:)"+ viewHolder.textView1.getText().toString());
                     Intent intent=new Intent();
                     String s=viewHolder.textView1.getText().toString().substring(5);
                     intent.putExtra("name",s);
+                    intent.putExtra("id",viewHolder.id);
                     intent.putExtra("module",mParam1);
                     intent.putExtra("flag",flag);
+
 //                    startActivityForResult(activity,intent,10,null);
                     activity.setResult(Activity.RESULT_OK,intent);
                     activity.finish();
@@ -277,6 +282,7 @@ public class Adapter extends ArrayAdapter<HashMap<String, String>> implements Ac
                         mlistener.onItemClicked( viewHolder.textView1.getText().toString());
                     }
                 }else if (resource==12){
+                    Log.e(TAG, "onClick: request code 12" );
                     Intent intent=new Intent();
                     String s=viewHolder.textView1.getText().toString().substring(5);
                     intent.putExtra("name",s);
@@ -295,15 +301,15 @@ public class Adapter extends ArrayAdapter<HashMap<String, String>> implements Ac
     private String getdisplayname(String string) throws JSONException {
         String displayname = "";
         String fielddefs = databasehelper.getdisplaylabel(mParam1);
-        Log.e(TAG, "getdisplayname: " + fielddefs);
+//        Log.e(TAG, "getdisplayname: " + fielddefs);
         JSONArray object = new JSONArray(fielddefs);
-        Log.e(TAG, "getdisplayname:object " + object);
+//        Log.e(TAG, "getdisplayname:object " + object);
         for (int i = 0; i < object.length(); i++) {
             JSONObject object1 = object.getJSONObject(i);
-            Log.e(TAG, "getdisplayname:object1 " + object1);
+//            Log.e(TAG, "getdisplayname:object1 " + object1);
 
             String name = object1.optString("name");
-            Log.e(TAG, "getdisplayname:name " + name);
+//            Log.e(TAG, "getdisplayname:name " + name);
             if (name.equals(string)) {
                 displayname = object1.optString("display_label");
             }

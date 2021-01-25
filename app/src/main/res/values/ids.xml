@@ -20,4 +20,5 @@
     <item name="flag" type="id" />
     <item name="name" type="id"/>
     <item name="option" type="id" />
+    <item name="tableName" type="id" />
 </resources>

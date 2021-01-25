@@ -2,11 +2,13 @@ package com.priyanka.newuat_demo;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.DialogFragment;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.InputFilter;
 import android.text.InputType;
@@ -25,6 +27,14 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import androidx.appcompat.widget.Toolbar;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.DefaultRetryPolicy;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.priyanka.newuat_demo.Adapter.Adapter;
@@ -35,17 +45,22 @@ import com.priyanka.newuat_demo.SubModule.RelateFieldSelection;
 import com.priyanka.newuat_demo.fragment.Details_frag;
 import com.priyanka.newuat_demo.fragment.SelectDateFragment;
 import com.priyanka.newuat_demo.fragment.SelectTimeFragment;
+import com.priyanka.newuat_demo.singletone.variables;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
@@ -58,6 +73,8 @@ public class CreateFeature extends AppCompatActivity  {
     // Variables
     String module;
     String name=null;
+    String backEndName;
+    String mainurl;
 
     //Databse
     Databasehelper databasehelper;
@@ -82,6 +99,8 @@ public class CreateFeature extends AppCompatActivity  {
     Adapter.OnItemClickLister mlistener;
 
     JSONObject jsonObject;
+
+    SharedPrefrence prefrence;
 
 //    HashMap<String ?>
 
@@ -113,6 +132,13 @@ public class CreateFeature extends AppCompatActivity  {
         //Database
         databasehelper=new Databasehelper(getApplicationContext());
 
+        //preffrences
+        prefrence=new SharedPrefrence(getApplicationContext());
+
+        //main url
+        mainurl=prefrence.getURl();
+
+
         //Class
         detail=new Detail();
 
@@ -136,6 +162,10 @@ public class CreateFeature extends AppCompatActivity  {
 //        getSupportActionBar().men;
 
 
+        // fetching module key
+
+        backEndName=databasehelper.getBackendname(module);
+        Log.e(TAG, "onCreate:backEndName===> "+backEndName );
 
         //functions calling
         createLayout(array,getApplicationContext(),linearLayout);
@@ -143,7 +173,8 @@ public class CreateFeature extends AppCompatActivity  {
 
 
     }
-    private void createTextRelationShip(LinearLayout linearLayout, String key, String typr, String required, String module, String backend_name) {
+
+    private void createTextRelationShip(LinearLayout linearLayout, String key, String typr, String required, String module, String backend_name, String table_name) {
         // create a checkbox and Inputtxtlayout inside a linearvertical layout
 
 //        LinearLayout.LayoutParams params3=
@@ -173,6 +204,7 @@ public class CreateFeature extends AppCompatActivity  {
         textInputEditText.setHint(key);
         textInputEditText.setTag(R.id.type,typr);
         textInputEditText.setTag(R.id.key,key);
+        textInputEditText.setTag(R.id.tableName,table_name);
         textInputEditText.setTag(R.id.required,required);
         textInputEditText.setTag(R.id.module,module);
         textInputEditText.setTag(R.id.name,backend_name);
@@ -274,7 +306,8 @@ public class CreateFeature extends AppCompatActivity  {
                             break;
                         case "relate":
 //                            Log.e(TAG, "createLayout: I am your relate field==> "+key+" || "+details.getString(i)+" || "+ module);
-                            relateData(linearLayout,key,typr,required,module,details.getString(i),backend_name,textinputparams,edittxtparams);
+                            String tableName=details_frag.getDisplayNames(details.getString(i),"table_name",context);
+                            relateData(linearLayout,key,typr,required,module,details.getString(i),backend_name,textinputparams,edittxtparams,tableName);
                             break;
                         case "multi-phone":
                             linearLayout1.setTag(R.id.type,typr);
@@ -329,8 +362,9 @@ public class CreateFeature extends AppCompatActivity  {
                             createDate(linearLayout,key,typr,required,backend_name);
                             break;
                         case "text-relationship":
+                            String table_name = details_frag.getDisplayNames(details.getString(i),"table_name",context);
                             Log.e(TAG, "createLayout: i am your text relationship"+key );
-                            createTextRelationShip(linearLayout,key,typr,required,module,backend_name);
+                            createTextRelationShip(linearLayout,key,typr,required,module,backend_name,table_name);
                             break;
                         default:
 
@@ -342,7 +376,7 @@ public class CreateFeature extends AppCompatActivity  {
         }
     }
 
-    private void relateData(LinearLayout linearLayout, String key, String typr, String required, String module, String string, String backend_name, TextInputLayout.LayoutParams textinputparams, TextInputLayout.LayoutParams edittxtparams) {
+    private void relateData(LinearLayout linearLayout, String key, String typr, String required, String module, String string, String backend_name, TextInputLayout.LayoutParams textinputparams, TextInputLayout.LayoutParams edittxtparams, String tableName) {
 
         LinearLayout.LayoutParams params=new LinearLayout.LayoutParams(MATCH_PARENT,WRAP_CONTENT);
         params.setMargins(15,10,15,10);
@@ -364,9 +398,10 @@ public class CreateFeature extends AppCompatActivity  {
                 autoCompleteTextView.setTag(R.id.type,typr);
                 autoCompleteTextView.setTag(R.id.required,required);
                 autoCompleteTextView.setTag(R.id.name,backend_name);
+                autoCompleteTextView.setTag(R.id.tableName,tableName);
                 // fetch names of team members
                 ArrayList<TeamData> arrayList = databasehelper.fetchAllMemberNames();
-//                Log.e(TAG, "relateData: "+arrayList.get(1).getName());
+//                Log.e(TAG, "relateData: autoCompleteTextView==>"+arrayList.get(1).getName());
                 ArrayList<String> arrayList1=new ArrayList<>();
                 for (int i=0;i<arrayList.size();i++)
                 {
@@ -392,6 +427,7 @@ public class CreateFeature extends AppCompatActivity  {
 
                 break;
             default:
+
                 EditText editText=new EditText(textInputLayout.getContext());
                 editText.setLayoutParams(edittxtparams);
 //                editText.setHint(key);
@@ -400,6 +436,7 @@ public class CreateFeature extends AppCompatActivity  {
                 editText.setTag(R.id.required,required);
                 editText.setTag(R.id.module,module);
                 editText.setTag(R.id.name,backend_name);
+                editText.setTag(R.id.tableName);
                 editText.setPadding(10,40,10,40);
                 textInputLayout.addView(editText);
                 linearLayout.addView(textInputLayout);
@@ -416,6 +453,7 @@ public class CreateFeature extends AppCompatActivity  {
             }
 
     }
+
     private void createDate(LinearLayout linearLayout, String key, String typr, String required, String backend_name) {
         //Date and time picker here
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT);
@@ -479,6 +517,20 @@ public class CreateFeature extends AppCompatActivity  {
         linearLayout1.addView(editText);
         linearLayout1.addView(editText1);
         linearLayout.addView(linearLayout1);
+    }
+
+    private String fetchTeamId(String name){
+        String abc="";
+        ArrayList<TeamData> arrayList = databasehelper.fetchAllMemberNames();
+//                Log.e(TAG, "relateData: autoCompleteTextView==>"+arrayList.get(1).getName());
+//        ArrayList<String> arrayList1=new ArrayList<>();
+        for (int i=0;i<arrayList.size();i++)
+        {
+            if (arrayList.get(i).getName().equals(name)){
+                abc=arrayList.get(i).getId();
+            }
+        }
+        return abc;
     }
 
     private String domeMoileLayout(String s, String options){
@@ -596,6 +648,7 @@ public class CreateFeature extends AppCompatActivity  {
         }
         if (typr.equals("multi-address")){
             textInputEditText.setFocusable(false);
+            textInputEditText.setTag(R.id.key,key+indexOfMyView);
         }
         textInputEditText.setInputType(typeClass);
         textInputEditText.setFocusable(true);
@@ -728,6 +781,7 @@ public class CreateFeature extends AppCompatActivity  {
             startActivityForResult(intent,11);
         }else if (textInputEditText.getTag(R.id.type).equals("multi-address")){
            intent=new Intent(this, AddressPicker.class);
+           intent.putExtra("key",key+indexOfMyView);
            startActivityForResult(intent,19);
         }
     });
@@ -739,15 +793,17 @@ public class CreateFeature extends AppCompatActivity  {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         Log.e(TAG, "onActivityResult:ohh yeah activity came back " );
+        String id = null;
 
         if (requestCode ==10){
             if (resultCode==RESULT_OK){
                 name=data.getStringExtra("name");
                 module=data.getStringExtra("module");
+                id=data.getStringExtra("id");
                 Log.e(TAG, "onActivityResult: "+ name+"|| "+module);
                 // loop through the existing layout and set text at relate field
                 String module1=databasehelper.getBackendname(module);
-                setRelatedata(name, module1);
+                setRelatedata(name, module1,id);
 
             }
         }else if (requestCode==11){
@@ -755,9 +811,10 @@ public class CreateFeature extends AppCompatActivity  {
                 name=data.getStringExtra(   "name");
                 module=data.getStringExtra("module");
                 String key=data.getStringExtra("flag");
+                id= data.getStringExtra("id");
                 Log.e(TAG, "onActivityResult: "+ name+"|| "+module+" falg==>"+key);
                 // loop through the existing layout and set text at relate field
-                setRelatedataTeam(name, "Accounts",key );
+                setRelatedataTeam(name, "Accounts",key ,id);
 
             }
         }else if (requestCode==12){
@@ -795,7 +852,7 @@ public class CreateFeature extends AppCompatActivity  {
                     }
                 }
                 Log.e(TAG, "onActivityResult: "+res);
-                setRelatedataTeam(res,module,key);
+                setRelatedataTeam(res,module,key,id);
             }
         }
 
@@ -820,13 +877,13 @@ public class CreateFeature extends AppCompatActivity  {
         }
     }
 
-    private void setRelatedataTeam(String name, String accounts, String key) {
-        Log.e(TAG, "setRelatedataTeam: hey i am called==> "+module );
+    private void setRelatedataTeam(String name, String accounts, String key,String id) {
+//        Log.e(TAG, "setRelatedataTeam: hey i am called==> "+module );
         for (int i=0;i<linearLayout.getChildCount();i++){
             if (linearLayout.getChildAt(i) instanceof LinearLayout){
                 LinearLayout linearLayout1= (LinearLayout) linearLayout.getChildAt(i);
                 for (int j=0;j<linearLayout1.getChildCount();j++){
-                    Log.e(TAG, "setRelatedataTeam:linearLayout1 "+linearLayout1.getChildAt(j) );
+//                    Log.e(TAG, "setRelatedataTeam:linearLayout1 "+linearLayout1.getChildAt(j) );
                     if (linearLayout1.getChildAt(j) instanceof LinearLayout){
                         LinearLayout linearLayout2= (LinearLayout) linearLayout1.getChildAt(j);
 //                        Log.e(TAG, "setRelatedataTeam: linearLayout2"+linearLayout2.getChildCount());
@@ -847,11 +904,13 @@ public class CreateFeature extends AppCompatActivity  {
                                     if (textInputLayout.getEditText() instanceof TextInputEditText){
 //                                        Log.e(TAG, "setRelatedataTeam:TextInputEditText: ");
                                         TextInputEditText textInputEditText= (TextInputEditText) textInputLayout.getEditText();
-//                                        Log.e(TAG, "setRelatedataTeam: "+textInputEditText.getTag(R.id.key));
+                                        Log.e(TAG, "setRelatedataTeam:textInputEditText.getTag(R.id.key)==> "+textInputEditText.getTag(R.id.key)+" || type==>" +textInputEditText.getTag(R.id.type)+" || ==>"+key);
                                         if (textInputEditText.getTag(R.id.type).equals("relate")&&textInputEditText.getTag(R.id.key).equals(key)){
-//                                            Log.e(TAG, "setRelatedata:you got edit text "+name );
+                                            Log.e(TAG, "setRelatedata:you got edit text " + name );
                                             textInputEditText.setText(name);
-                                        }else if (textInputEditText.getTag(R.id.type).equals("multi-address")){
+                                            textInputEditText.setTag(R.id.id,id);
+                                        }
+                                        if (textInputEditText.getTag(R.id.key).equals(key)){
                                             textInputEditText.setText(name);
                                         }
                                     }
@@ -872,7 +931,7 @@ public class CreateFeature extends AppCompatActivity  {
     }
 
 
-    private void setRelatedata(String name, String module) {
+    private void setRelatedata(String name, String module,String id) {
 
         for(int i=0;i<linearLayout.getChildCount();i++){
             if (linearLayout.getChildAt(i) instanceof TextInputLayout) {
@@ -882,7 +941,8 @@ public class CreateFeature extends AppCompatActivity  {
                     Log.e(TAG, "setRelatedata: "+editText.getTag(R.id.key));
                     if (editText.getTag(R.id.type).equals("relate")&&editText.getTag(R.id.module).equals(module)){
                         editText.setText(name);
-                        Log.e(TAG, "setRelatedata: hey you got an edit txt" +editText.getTag(R.id.key));
+                        editText.setTag(R.id.id,id);
+                        Log.e(TAG, "setRelatedata: hey you got an edit txt" +editText.getTag(R.id.key)+" || ==:  "+editText.getTag(R.id.id));
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -892,15 +952,21 @@ public class CreateFeature extends AppCompatActivity  {
     }
 
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     public void save(MenuItem item) {
         JSONObject jsonObject1=new JSONObject();
         JSONObject jsonObject2=new JSONObject();
         JSONObject jsonObject3=new JSONObject();
+        JSONArray relateArray=new JSONArray();
+        Boolean flag=false;
+        Boolean chekboxflag=false;
+        Boolean requireflag=false;
+
 //        JSONArray jsonArray=new JSONArray();
-        Log.e(TAG, "save: you Click the Save...!" );
+//        Log.e(TAG, "save: you Click the Save...!" );
         try {
             Log.e(TAG, "save:  this is module ==>"+module );
-            jsonObject1.put("module_name",module);
+            jsonObject2.put("module_name",module);
 //            jsonObject2.put("name_value_list",jsonObject3);
         } catch (JSONException e) {
             e.printStackTrace();
@@ -911,18 +977,50 @@ public class CreateFeature extends AppCompatActivity  {
                 TextInputLayout textInputLayout = (TextInputLayout) linearLayout.getChildAt(i);
                 // for textInputEdittxt
                 if (textInputLayout.getEditText() instanceof TextInputEditText){
-                TextInputEditText textInputEditText = (TextInputEditText) textInputLayout.getEditText();
+                    TextInputEditText textInputEditText = (TextInputEditText) textInputLayout.getEditText();
 //                Log.e(TAG, "save: "+ textInputEditText.getText()+" || " +textInputEditText.getTag(R.id.name));
-                try {
+                    Log.e(TAG, "save: checking for requred field==>"+textInputEditText.getTag(R.id.required) );
+                    if (textInputEditText.getTag(R.id.required).equals("1")){
+                        textInputLayout.setError("Required ");
+                        requireflag=true;
+                        break;
+                    }
+                    try {
                     jsonObject3.put(textInputEditText.getTag(R.id.name).toString(), textInputEditText.getText().toString());
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
                 }
                 if (textInputLayout.getEditText() instanceof EditText){
+                    // for realte field
+                    JSONObject jsonObject4=new JSONObject();
                     EditText editText=textInputLayout.getEditText();
                     try {
-                        jsonObject3.put(editText.getTag(R.id.name).toString(), editText.getText().toString());
+                        String s=editText.getTag(R.id.name).toString();
+                        switch (s){
+                            case "assigned_user_id":
+//                            case "team_id":
+                                String id=fetchTeamId(editText.getText().toString());
+                                jsonObject3.put(editText.getTag(R.id.name).toString(),id);
+                                break;
+                            case "account_id":
+//                                Log.e(TAG, "save:editText.getTag(R.id.id) ==> "+editText.getTag(R.id.id) );
+//                                jsonObject4.put(editText.getTag(R.id.name).toString(),editText.getTag(R.id.id).toString());
+//                                break;
+//                            default:
+                                if (!editText.getText().toString().isEmpty()){
+                                    JSONObject jsonObject5=new JSONObject();
+                                    jsonObject5.put("id",editText.getTag(R.id.id));
+                                    jsonObject5.put("module_name",editText.getTag(R.id.module));
+                                    jsonObject5.put("table_name",editText.getTag(R.id.tableName));
+                                    jsonObject5.put("current_module",backEndName);
+                                    jsonObject4.put(editText.getTag(R.id.name).toString(), jsonObject5);
+                                    relateArray.put(jsonObject4);
+                                    flag=true;
+                                }
+                        }
+                        if(flag){
+                        jsonObject3.put("related_modules",relateArray);}
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
@@ -930,12 +1028,55 @@ public class CreateFeature extends AppCompatActivity  {
             }
             if (linearLayout.getChildAt(i) instanceof LinearLayout){
                 LinearLayout linearLayout1= (LinearLayout) linearLayout.getChildAt(i);
+
+                JSONArray jsonArray=new JSONArray();
+                ArrayList arrayList=new ArrayList();
+
+                JSONObject jsonObject4=new JSONObject();
                 for (int j=0;j<linearLayout1.getChildCount();j++) {
-//                    Log.e(TAG, "save: linearLayout1.getChildAt(j)==>"+linearLayout1.getChildAt(j)+" || "+linearLayout1.getTag(R.id.key) );
+//                    Log.e(TAG, "save: linearLayout1.getChildAt(j)==>"+linearLayout1.getChildAt(j)+" || "+linearLayout1.getTag(R.id.key) +" || =>"+linearLayout1.getTag(R.id.name));
+                    if (linearLayout1.getChildAt(j) instanceof CheckBox){
+                        CheckBox checkBox= (CheckBox) linearLayout1.getChildAt(j);
+                        if(checkBox.isChecked()){
+                            chekboxflag=true;
+                        }
+
+                    }
+
                     if (linearLayout1.getChildAt(j) instanceof TextInputLayout){
                         TextInputLayout textInputLayout= (TextInputLayout) linearLayout1.getChildAt(j);
                         TextInputEditText textInputEditText= (TextInputEditText) textInputLayout.getEditText();
-//                        Log.e(TAG, "save:textInputEditText==> "+textInputEditText.getTag(R.id.key));
+                        if (textInputEditText.getTag(R.id.type).equals("text-relationship")&& chekboxflag){
+                            Log.e(TAG, "save:text-relationship ");
+                            if (!textInputEditText.getText().toString().isEmpty()){
+                                Log.e(TAG, "save: textInputEditText.getText()==> "+textInputEditText.getText() );
+                                JSONObject jsonObject5=new JSONObject();
+                                try {
+                                    jsonObject5.put("id",textInputEditText.getTag(R.id.id));
+                                    jsonObject5.put("module_name",textInputEditText.getTag(R.id.module));
+                                    jsonObject5.put("table_name",textInputEditText.getTag(R.id.tableName));
+                                    jsonObject5.put("current_module",backEndName);
+                                    jsonObject4.put(textInputEditText.getTag(R.id.name).toString(), jsonObject5);
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+                                relateArray.put(jsonObject4);
+                                flag=true;
+                            }
+                        }
+                        if (flag){
+                            try {
+                                Log.e(TAG, "save: relateArray==> "+relateArray );
+                                jsonObject3.put("related_modules",relateArray);
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+
+                        }else {
+                            Log.e(TAG, "save: textInputEditText.getTag(R.id.name) ==> "+textInputEditText.getTag(R.id.name) );
+                            textInputEditText.setTag(R.id.name,textInputEditText.getTag(R.id.name)+"_name");
+                        }
+
                         try {
                             jsonObject3.put(textInputEditText.getTag(R.id.name).toString(), textInputEditText.getText().toString());
                         } catch (JSONException e) {
@@ -958,14 +1099,13 @@ public class CreateFeature extends AppCompatActivity  {
                     }
                     if (linearLayout1.getChildAt(j) instanceof LinearLayout){
                         // this is for nested Layout
-                        JSONArray jsonArray=new JSONArray();
+//                        JSONArray jsonArray=new JSONArray();
                         String layoutkey = null;
                         String table_name = null;
                         String related_table_name = null;
                         String primary;
                         String invalid;
                         String unsubscribed;
-                        Log.e(TAG, "save:linearLayout1.getTag(R.id.key)==> "+linearLayout1.getTag(R.id.key));
 
                         switch (linearLayout1.getTag(R.id.key).toString()){
                             case "Phone":
@@ -983,47 +1123,129 @@ public class CreateFeature extends AppCompatActivity  {
                                 layoutkey="hiddenAddress";
                                 break;
 
+                            case "Team":
+//                                Log.e(TAG, "save: you got the team==> "+ linearLayout1.getChildAt(j) );
+//                                Log.e(TAG, "save:linearLayout1.getTag(R.id.key)==> "+linearLayout1.getTag(R.id.key));
+
+
+
                         }
 
                         LinearLayout linearLayout2 = (LinearLayout) linearLayout1.getChildAt(j);
                         JSONObject jsonObject;
-                        jsonObject = new JSONObject();
+
                         for (int k=0;k<linearLayout2.getChildCount();k++){
+                            jsonObject = new JSONObject();
+
+
 //                            Log.e(TAG, "save: linearLayout2.getChildAt(k===> "+linearLayout2.getChildAt(k));
                             if (linearLayout2.getChildAt(k) instanceof TextInputLayout) {
                                 TextInputLayout textInputLayout = (TextInputLayout) linearLayout2.getChildAt(k);
                                 TextInputEditText textInputEditText = (TextInputEditText) textInputLayout.getEditText();
-                                Log.e(TAG, "save:textInputEditText " + textInputEditText.getTag(R.id.name));
-                                if (!textInputEditText.getText().toString().isEmpty()){
-                                try {
-                                    jsonObject.put("table_name", table_name);
-                                    jsonObject.put("related_table_name", related_table_name);
-                                    jsonObject.put(table_name, textInputEditText.getText());
-                                    if (k == 0) {
-                                        jsonObject.put("primary", true);
-                                    } else {
-                                        jsonObject.put("primary", false);
-                                    }
-                                    jsonObject.put("invalid", false);
-                                    jsonObject.put("unsubscribed", false);
-                                    Log.e(TAG, "save:multifield==> " + jsonObject);
-                                    Log.e(TAG, "save: jsonArray==>"+jsonArray );
-                                    jsonArray.put(jsonObject);
-                                } catch (JSONException e) {
-                                    e.printStackTrace();
+                                if (linearLayout1.getTag(R.id.key).toString().equals("Team")){
+//                                    Log.e(TAG, "save: "+linearLayout2.getChildAt(k));
+                                    Log.e(TAG, "save:textInputEditText.getTag(R.id.name)==> "+textInputEditText.getTag(R.id.name));
+                                    Log.e(TAG, "save:textInputEditText.getText()==>> "+textInputEditText.getText() +" || "+ textInputEditText.getTag(R.id.id));
+                                    arrayList.add(textInputEditText.getTag(R.id.id));
                                 }
+//                                Log.e(TAG, "save:textInputEditText " + textInputEditText.getTag(R.id.name));
+                                if (!textInputEditText.getText().toString().isEmpty()){
+                                    try {
+                                        jsonObject.put("table_name", table_name);
+                                        jsonObject.put("related_table_name", related_table_name);
+                                        jsonObject.put(table_name, textInputEditText.getText());
+                                        if (k == 0) {
+                                            jsonObject.put("primary", true);
+                                        } else {
+                                            jsonObject.put("primary", false);
+                                        }
+                                        jsonObject.put("invalid", false);
+                                        jsonObject.put("unsubscribed", false);
+                                        Log.e(TAG, "save:multifield jsonObject ==> " + jsonObject);
+                                        jsonArray.put(jsonObject);
+                                        Log.e(TAG, "save:multifield jsonArray==>"+jsonArray );
+                                    } catch (JSONException e) {
+                                        e.printStackTrace();
+                                    }
                                 }
                             }
                         }
-                        try {
-                            jsonObject3.put(layoutkey,jsonArray);
-                        } catch (JSONException e) {
-                            e.printStackTrace();
+                        Log.e(TAG, "save: arrayList==>"+arrayList );
+
+                        String abc = commaSepratedString(arrayList);
+                        if (abc!=null) {
+                            try {
+                                jsonObject3.put("teamsSet", abc);
+
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
                         }
+
+                            try {
+                                jsonObject3.put(layoutkey,jsonArray);
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+
                     }
                 }
             }
         }
         Log.e(TAG, "save: jsonObject3==> " + jsonObject3);
+
+        try {
+            jsonObject2.put("name_value_list",jsonObject3);
+            jsonObject1.put("rest_data",jsonObject2);
+            Log.e(TAG, "save:jsonObject1==>> "+jsonObject1 );
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        if (!requireflag){
+            SubmitRequest(jsonObject3);
+        }
+    }
+
+    private void SubmitRequest(JSONObject jsonObject) {
+        String url=prefrence.getURl()+ variables.version+variables.URL_CREATE;
+        String auth=variables.BEARER+prefrence.getToken();
+        JsonObjectRequest jsonObjectRequest=new JsonObjectRequest(Request.Method.POST, url, null, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                Log.e(TAG, "onResponse: record created" );
+
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.e(TAG, "onErrorResponse: "+error );
+            }
+        }){
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+//                return super.getHeaders();
+                HashMap headers = new HashMap();
+                headers.put("Content-Type", "application/json");
+                headers.put("Accept", "application/json");
+                headers.put("Authorization", auth);
+                return headers;
+            }
+            @Override
+            public byte[] getBody() {
+                return jsonObject.toString().getBytes();
+            }
+        };
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(
+                1000 * 100,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+        RequestQueue queue = Volley.newRequestQueue(getApplicationContext());
+        queue.add(jsonObjectRequest);
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    private String commaSepratedString(ArrayList arrayList) {
+        return (String) arrayList.stream().collect(Collectors.joining(","));
     }
 }
