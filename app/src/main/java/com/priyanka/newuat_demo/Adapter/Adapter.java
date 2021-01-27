@@ -246,6 +246,7 @@ public class Adapter extends ArrayAdapter<HashMap<String, String>> implements Ac
         });
         viewHolder.imageView5.setOnClickListener(v -> {
             //code for editiong
+            
         });
 
         viewHolder.cardView.setOnClickListener(new View.OnClickListener() {

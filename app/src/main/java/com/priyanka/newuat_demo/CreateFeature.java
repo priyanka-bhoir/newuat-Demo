@@ -6,8 +6,10 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.DialogFragment;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.InputFilter;
@@ -25,6 +27,8 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import androidx.appcompat.widget.Toolbar;
 
 import com.android.volley.AuthFailureError;
@@ -50,14 +54,20 @@ import com.priyanka.newuat_demo.singletone.variables;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.w3c.dom.Text;
 
 import java.lang.reflect.Method;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
@@ -75,6 +85,7 @@ public class CreateFeature extends AppCompatActivity  {
     String name=null;
     String backEndName;
     String mainurl;
+    String id;
 
     //Databse
     Databasehelper databasehelper;
@@ -112,6 +123,7 @@ public class CreateFeature extends AppCompatActivity  {
     }
 
 
+    @SuppressLint("ResourceAsColor")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -134,6 +146,8 @@ public class CreateFeature extends AppCompatActivity  {
 
         //preffrences
         prefrence=new SharedPrefrence(getApplicationContext());
+
+//        Log.e(TAG, "onCreate: this is your user id==>>" + prefrence.getId() );
 
         //main url
         mainurl=prefrence.getURl();
@@ -158,13 +172,19 @@ public class CreateFeature extends AppCompatActivity  {
             toolbar.inflateMenu(R.menu.save);
 //            String name=databasehelper.getFrontEndname(module);
             toolbar.setTitle(module);
+            toolbar.setTitleTextColor(Color.WHITE);
+//            toolbar.setTitleTextColor();
 //        }
 //        getSupportActionBar().men;
 
+        //variables
+        id=prefrence.getId();
 
         // fetching module key
 
         backEndName=databasehelper.getBackendname(module);
+
+
         Log.e(TAG, "onCreate:backEndName===> "+backEndName );
 
         //functions calling
@@ -289,20 +309,9 @@ public class CreateFeature extends AppCompatActivity  {
                         case "url":
                         case "textarea":
                         case "comment":
+                        case "currency":
                             textInputLayout= new TextInputLayout(CreateFeature.this);
-                            textInputLayout.setLayoutParams(textinputparams);
-                            textInputLayout.setPadding(10,5,10,5);
-                            TextInputEditText textInputEditText=new TextInputEditText(textInputLayout.getContext());
-                            textInputEditText.setTag(R.id.type,typr);
-                            textInputEditText.setTag(R.id.key,key);
-                            textInputEditText.setTag(R.id.required,required);
-                            textInputEditText.setTag(R.id.name,backend_name);
-                            textInputEditText.setLayoutParams(textinputparams);
-
-                            textInputLayout.setHint(key);
-//                            textInputLayout.setBackground(R.color.material_on_background_emphasis_high_type);
-                            textInputLayout.addView(textInputEditText);
-                            linearLayout.addView(textInputLayout);
+                            CreateTextField(textInputLayout,typr,key,required,backend_name,textinputparams);
                             break;
                         case "relate":
 //                            Log.e(TAG, "createLayout: I am your relate field==> "+key+" || "+details.getString(i)+" || "+ module);
@@ -329,27 +338,7 @@ public class CreateFeature extends AppCompatActivity  {
                             String options=details_frag.getDisplayNames(details.getString(i),"options",context);
                             selectField(linearLayout,key,typr,required,textinputparams,edittxtparams,options,backend_name);
                             break;
-//                        case "textarea":
-//                        case "comment":
-//                            EditText textView=new EditText(linearLayout.getContext());
-//                            textView.setHint(key);
-//                            textView.setTag(R.id.key,key);
-//                            textView.setTag(R.id.type,typr);
-//                            textView.setTag(R.id.name,backend_name);
-////                            module="";
-//                            textView.setTag(R.id.module,module);
-//                            textView.setTag(R.id.required,required);
-//                            LinearLayout.LayoutParams params=new LinearLayout.LayoutParams(MATCH_PARENT,WRAP_CONTENT);
-//                            params.setMargins(15,10,15,10);
-//                            textView.setLayoutParams(params);
-//                            //textView.setScrollBarStyle(View.SCROLLBARS_OUTSIDE_OVERLAY);
-//                            textView.setMaxLines(5);
-////                            textView.
-//                            textView.setInputType(InputType.TYPE_CLASS_TEXT|InputType.TYPE_TEXT_FLAG_MULTI_LINE);
-//                            linearLayout.addView(textView);
-//                            break;
                         case "multi-address":
-//                        case "multi-tag":
                             linearLayout1.setTag(R.id.type,typr);
                             linearLayout1.setTag(R.id.key,key);
                             linearLayout1.setTag(R.id.required,required);
@@ -359,8 +348,12 @@ public class CreateFeature extends AppCompatActivity  {
 
                             break;
                         case "datetime":
+                        case "date":
+                        case "time":
                             createDate(linearLayout,key,typr,required,backend_name);
                             break;
+
+//                            createDate(linearLayout,key,typr,required,backend_name);
                         case "text-relationship":
                             String table_name = details_frag.getDisplayNames(details.getString(i),"table_name",context);
                             Log.e(TAG, "createLayout: i am your text relationship"+key );
@@ -374,6 +367,27 @@ public class CreateFeature extends AppCompatActivity  {
                 e.printStackTrace();
             }
         }
+    }
+
+    private void CreateTextField(TextInputLayout textInputLayout, String typr, String key, String required, String backend_name, LinearLayout.LayoutParams textinputparams) {
+        textInputLayout.setLayoutParams(textinputparams);
+        textInputLayout.setPadding(10,5,10,5);
+        TextInputEditText textInputEditText=new TextInputEditText(textInputLayout.getContext());
+        textInputEditText.setTag(R.id.type,typr);
+        textInputEditText.setTag(R.id.key,key);
+        textInputEditText.setTag(R.id.required,required);
+        textInputEditText.setTag(R.id.name,backend_name);
+        textInputEditText.setLayoutParams(textinputparams);
+        if (typr.equals("currency")){
+            textInputEditText.setInputType(InputType.TYPE_CLASS_NUMBER);
+        }
+        if (required.equals("1")){
+            textInputLayout.setHint(key+"*");
+        }else{
+            textInputLayout.setHint(key);}
+//                            textInputLayout.setBackground(R.color.material_on_background_emphasis_high_type);
+        textInputLayout.addView(textInputEditText);
+        linearLayout.addView(textInputLayout);
     }
 
     private void relateData(LinearLayout linearLayout, String key, String typr, String required, String module, String string, String backend_name, TextInputLayout.LayoutParams textinputparams, TextInputLayout.LayoutParams edittxtparams, String tableName) {
@@ -455,6 +469,7 @@ public class CreateFeature extends AppCompatActivity  {
     }
 
     private void createDate(LinearLayout linearLayout, String key, String typr, String required, String backend_name) {
+        Log.e(TAG, "createDate: this is the typr "+typr+" || key==>"+key);
         //Date and time picker here
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT);
         params.setMargins(30,20,30,20);
@@ -464,13 +479,26 @@ public class CreateFeature extends AppCompatActivity  {
         linearLayout1.setTag(R.id.key,key);
         linearLayout1.setTag(R.id.type,typr);
         linearLayout1.setTag(R.id.name,backend_name);
+        TextView textView=new TextView(linearLayout1.getContext());
+        textView.setLayoutParams(params);
+        if (required.equals("1")){
+            textView.setText(key+"*");
+        }else {
+            textView.setText(key);
+        }
+        textView.setText(key);
+        linearLayout1.addView(textView);
         EditText editText=new EditText(linearLayout1.getContext());
         params.weight=1;
         editText.setLayoutParams(params);
-        editText.setHint("Time");
+        if (required.equals("1")){
+            editText.setHint("Date"+"*:");
+        }else {
+        editText.setHint("Date:");}
 //        editText.setTag(R.id.tag,"");
         editText.setFocusable(false);
         editText.setTag(R.id.name,backend_name);
+
         editText.setTag(R.id.key,key);
         editText.setTag(R.id.type,typr);
         editText.setTag(R.id.required,required);
@@ -483,35 +511,38 @@ public class CreateFeature extends AppCompatActivity  {
         editText1.setTag(R.id.key,key);
         editText1.setTag(R.id.name,backend_name);
         editText1.setInputType(InputType.TYPE_CLASS_DATETIME);
-        editText1.setHint("Date:");
+        if (typr.equals("time")){
+            Log.e(TAG, "createDate:yeah i got a time typr " );
+            editText.setVisibility(View.GONE);
+        }
+        if (typr.equals("date")){
+            editText1.setVisibility(View.GONE);
+        }
+        editText1.setHint("Time:");
         ImageView imageView=new ImageView(linearLayout1.getContext());
-        editText.setOnClickListener(v -> {
-            DialogFragment newFragment = new SelectTimeFragment(editText1);
+        if (typr.equals("datetime")){
+            editText.setOnClickListener(v -> {
+                DialogFragment newFragment = new SelectTimeFragment(editText1);
+                newFragment.show(getSupportFragmentManager(), "DatePicker");
+                newFragment = new SelectDateFragment(editText);
+                newFragment.show(getSupportFragmentManager(), "DatePicker");
+            });
+        }else{
+            editText.setOnClickListener(v -> {
+            DialogFragment newFragment = new SelectDateFragment(editText);
             newFragment.show(getSupportFragmentManager(), "DatePicker");
-            newFragment = new SelectDateFragment(editText);
-            newFragment.show(getSupportFragmentManager(), "DatePicker");
-//            if (editText.getTag(R.id.tag).equals("full")){
-//                imageView.setImageResource(R.drawable.ic_baseline_clear_24);
-//                linearLayout1.addView(imageView);
-//            }
-        });
+            });
+        }
         editText1.setOnClickListener(v -> {
             DialogFragment newFragment = new SelectTimeFragment(editText1);
             newFragment.show(getSupportFragmentManager(), "DatePicker");
-//            if (editText1.getTag(R.id.tag).equals("full")){
-//                imageView.setImageResource(R.drawable.ic_baseline_clear_24);
-//                linearLayout1.addView(imageView);
-//            }
         });
-        imageView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                editText.setText("");
-                editText1.setText("");
-                editText.setTag(R.id.tag,"Empty");
-                editText1.setTag(R.id.tag,"Empty");
-                linearLayout1.removeView(imageView);
-            }
+        imageView.setOnClickListener(v -> {
+            editText.setText("");
+            editText1.setText("");
+            editText.setTag(R.id.tag,"Empty");
+            editText1.setTag(R.id.tag,"Empty");
+            linearLayout1.removeView(imageView);
         });
 
         linearLayout1.addView(editText);
@@ -519,7 +550,7 @@ public class CreateFeature extends AppCompatActivity  {
         linearLayout.addView(linearLayout1);
     }
 
-    private String fetchTeamId(String name){
+    private String fetchUserId(String name){
         String abc="";
         ArrayList<TeamData> arrayList = databasehelper.fetchAllMemberNames();
 //                Log.e(TAG, "relateData: autoCompleteTextView==>"+arrayList.get(1).getName());
@@ -582,7 +613,9 @@ public class CreateFeature extends AppCompatActivity  {
         //Set these vlaues on spinnner
 
         TextView textView=new TextView(linearLayout.getContext());
-        textView.setText(key);
+        if (required.equals("1")){
+            textView.setText(key+"*");
+        }   else {     textView.setText(key);}
         textView.setLayoutParams(params);
 
         linearLayout.addView(textView);
@@ -966,7 +999,7 @@ public class CreateFeature extends AppCompatActivity  {
 //        Log.e(TAG, "save: you Click the Save...!" );
         try {
             Log.e(TAG, "save:  this is module ==>"+module );
-            jsonObject2.put("module_name",module);
+            jsonObject2.put("module_name",backEndName);
 //            jsonObject2.put("name_value_list",jsonObject3);
         } catch (JSONException e) {
             e.printStackTrace();
@@ -980,16 +1013,10 @@ public class CreateFeature extends AppCompatActivity  {
                     TextInputEditText textInputEditText = (TextInputEditText) textInputLayout.getEditText();
 //                Log.e(TAG, "save: "+ textInputEditText.getText()+" || " +textInputEditText.getTag(R.id.name));
                     Log.e(TAG, "save: checking for requred field==>"+textInputEditText.getTag(R.id.required) );
-                    if (textInputEditText.getTag(R.id.required).equals("1")){
-                        textInputLayout.setError("Required ");
-                        requireflag=true;
-                        break;
-                    }
                     try {
-                    jsonObject3.put(textInputEditText.getTag(R.id.name).toString(), textInputEditText.getText().toString());
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
+                        jsonObject3.put(textInputEditText.getTag(R.id.name).toString(), textInputEditText.getText().toString());
+                    }catch(JSONException e) {
+                    e.printStackTrace(); }
                 }
                 if (textInputLayout.getEditText() instanceof EditText){
                     // for realte field
@@ -1000,7 +1027,10 @@ public class CreateFeature extends AppCompatActivity  {
                         switch (s){
                             case "assigned_user_id":
 //                            case "team_id":
-                                String id=fetchTeamId(editText.getText().toString());
+                                String id=fetchUserId(editText.getText().toString());
+                                if (id.isEmpty()){
+                                    id=this.id;
+                                }
                                 jsonObject3.put(editText.getTag(R.id.name).toString(),id);
                                 break;
                             case "account_id":
@@ -1033,8 +1063,9 @@ public class CreateFeature extends AppCompatActivity  {
                 ArrayList arrayList=new ArrayList();
 
                 JSONObject jsonObject4=new JSONObject();
+                String date = "";
                 for (int j=0;j<linearLayout1.getChildCount();j++) {
-//                    Log.e(TAG, "save: linearLayout1.getChildAt(j)==>"+linearLayout1.getChildAt(j)+" || "+linearLayout1.getTag(R.id.key) +" || =>"+linearLayout1.getTag(R.id.name));
+//                    Log.e(TAG, "save: linearLayout1.getChildAt(j).getTag(R.id.key)==>"+linearLayout1.getChildAt(j).getTag(R.id.key)+" || "+linearLayout1.getTag(R.id.key) +" || =>"+linearLayout1.getTag(R.id.name)+"|| "+linearLayout1.getChildAt(j));
                     if (linearLayout1.getChildAt(j) instanceof CheckBox){
                         CheckBox checkBox= (CheckBox) linearLayout1.getChildAt(j);
                         if(checkBox.isChecked()){
@@ -1107,28 +1138,31 @@ public class CreateFeature extends AppCompatActivity  {
                         String invalid;
                         String unsubscribed;
 
-                        switch (linearLayout1.getTag(R.id.key).toString()){
-                            case "Phone":
-                                layoutkey="hiddenPhone";
-                                table_name="phone_numbers";
-                                related_table_name="phone_numbers_rel";
-                                break;
-                            case "Email":
-                                layoutkey="hiddenEmail";
-                                table_name="email_addresses";
-                                related_table_name="email_address_rel";
+                        try {
+                            switch (linearLayout1.getTag(R.id.key).toString()) {
+                                case "Phone":
+                                    layoutkey = "hiddenPhone";
+                                    table_name = "phone_numbers";
+                                    related_table_name = "phone_numbers_rel";
+                                    break;
+                                case "Email":
+                                    layoutkey = "hiddenEmail";
+                                    table_name = "email_addresses";
+                                    related_table_name = "email_address_rel";
 
-                                break;
-                            case "Address":
-                                layoutkey="hiddenAddress";
-                                break;
+                                    break;
+                                case "Address":
+                                    layoutkey = "hiddenAddress";
+                                    break;
 
-                            case "Team":
+                                case "Team":
 //                                Log.e(TAG, "save: you got the team==> "+ linearLayout1.getChildAt(j) );
 //                                Log.e(TAG, "save:linearLayout1.getTag(R.id.key)==> "+linearLayout1.getTag(R.id.key));
 
 
-
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
                         }
 
                         LinearLayout linearLayout2 = (LinearLayout) linearLayout1.getChildAt(j);
@@ -1170,7 +1204,7 @@ public class CreateFeature extends AppCompatActivity  {
                                 }
                             }
                         }
-                        Log.e(TAG, "save: arrayList==>"+arrayList );
+//                        Log.e(TAG, "save: arrayList==>"+arrayList );
 
                         String abc = commaSepratedString(arrayList);
                         if (abc!=null) {
@@ -1189,12 +1223,38 @@ public class CreateFeature extends AppCompatActivity  {
                             }
 
                     }
+                    if (linearLayout1.getChildAt(j) instanceof EditText){
+                        EditText editText= (EditText) linearLayout1.getChildAt(j);
+                        switch (editText.getTag(R.id.type).toString()){
+                            case "time":
+                            case "date":
+                                if (editText.getVisibility()==View.VISIBLE){
+                                    date=editText.getText().toString();
+                                }
+                                break;
+                            case "datetime":
+                                date+=" "+editText.getText().toString();
+                                Log.e(TAG, "save: this is the date==>> "+date );
+                                break;
+                        }
+                        try {
+                            String outputDate=serverDate(date,editText.getTag(R.id.type).toString());
+                            Log.e(TAG, "save:outputDate==> "+outputDate );
+                            jsonObject3.put(editText.getTag(R.id.name).toString(),outputDate);
+                                } catch (JSONException e) {
+                            Log.e(TAG, "save:JSONException==: "+e );
+                                    e.printStackTrace();
+                                }
+
+
+                    }
                 }
             }
         }
         Log.e(TAG, "save: jsonObject3==> " + jsonObject3);
 
         try {
+//            jsonObject3.put("")
             jsonObject2.put("name_value_list",jsonObject3);
             jsonObject1.put("rest_data",jsonObject2);
             Log.e(TAG, "save:jsonObject1==>> "+jsonObject1 );
@@ -1202,19 +1262,111 @@ public class CreateFeature extends AppCompatActivity  {
             e.printStackTrace();
         }
 
-        if (!requireflag){
-            SubmitRequest(jsonObject3);
+        Validate(jsonObject1);
+    }
+
+    @SuppressLint("SimpleDateFormat")
+    private String serverDate(String inputDate, String type) {
+        // Server Time : 2021-01-22 14:46:37
+        // user time : 27.1.2021 02:37 PM
+        String output="";
+        Date date;
+        DateFormat s;
+        DateFormat inputFormat;
+        Log.e(TAG, "serverDate: "+inputDate);
+        switch (type) {
+            case "datetime":
+                 s = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                inputFormat = new SimpleDateFormat("dd/mm/yyyy HH:mm a");
+            break;
+            case "date":
+                s = new SimpleDateFormat("yyyy-MM-dd");
+                inputFormat = new SimpleDateFormat("dd/mm/yyyy");
+                break;
+            case "time":
+                s = new SimpleDateFormat("HH:mm:ss");
+                inputFormat = new SimpleDateFormat("HH:mm a");
+                break;
+            default:
+                throw new IllegalStateException("Unexpected value: " + type);
+        }
+        try {
+            date= inputFormat.parse(inputDate);
+
+            output=s.format(date);
+            Log.e(TAG, "serverDate: "+ output);
+        } catch (Exception e) {
+//            Log.e(TAG, "serverDate: "+ e );
+            e.printStackTrace();
+        }
+        return output;
+    }
+
+    private void Validate(JSONObject jsonObject1) {
+        // this function is for validation on save
+        Log.e(TAG, "Validate: I am called" );
+        Boolean flag=true;
+        for (int i=0;i<linearLayout.getChildCount();i++){
+            //case text,select, datetime,currency
+//            Log.e(TAG, "Validate: "+linearLayout.getChildAt(i) );
+            if (linearLayout.getChildAt(i) instanceof TextInputLayout){
+                TextInputLayout textInputLayout= (TextInputLayout) linearLayout.getChildAt(i);
+                if(textInputLayout.getEditText() instanceof TextInputEditText){
+                TextInputEditText textInputEditText= (TextInputEditText) textInputLayout.getEditText();
+                    if (textInputEditText.getTag(R.id.required).equals("1") && textInputEditText.getText().toString().isEmpty()){
+                        textInputEditText.setError("Required");
+                        flag=false;
+                        textInputEditText.requestFocus();
+                        break;
+                    }
+                }
+                if(textInputLayout.getEditText() instanceof EditText){
+                    EditText editText=textInputLayout.getEditText();
+                    if(editText.getTag(R.id.required).equals("1")&& editText.getText().toString().isEmpty()){
+                        editText.setError("Required");
+                        editText.requestFocus();
+                        flag=false;
+                        break;
+                    }
+                }
+            }
+            if (linearLayout.getChildAt(i) instanceof LinearLayout){
+                 LinearLayout linearLayout1= (LinearLayout) linearLayout.getChildAt(i);
+                 for (int j=0;j<linearLayout1.getChildCount();j++){
+                     if(linearLayout1.getChildAt(j) instanceof EditText){
+                         EditText editText= (EditText) linearLayout1.getChildAt(j);
+                         if(editText.getTag(R.id.required).equals("1")&& editText.getText().toString().isEmpty()){
+                             editText.setError("Required");
+                             editText.requestFocus();
+                             flag=false;
+                             break;
+                         }
+                     }
+                 }
+            }
+        }
+        if(flag){
+            SubmitRequest(jsonObject1);
         }
     }
 
     private void SubmitRequest(JSONObject jsonObject) {
+        Log.e(TAG, "SubmitRequest:this is ==>> "+jsonObject);
         String url=prefrence.getURl()+ variables.version+variables.URL_CREATE;
         String auth=variables.BEARER+prefrence.getToken();
         JsonObjectRequest jsonObjectRequest=new JsonObjectRequest(Request.Method.POST, url, null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
-                Log.e(TAG, "onResponse: record created" );
-
+                String error;
+                Log.e(TAG, "onResponse: "+ response );
+                try {
+                    error=response.getString("error_message");
+                    Toast.makeText(getApplicationContext(),error,Toast.LENGTH_LONG).show();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                    Toast.makeText(getApplicationContext(),"Data Inserted...!",Toast.LENGTH_LONG).show();
+                    finish();
+                }
             }
         }, new Response.ErrorListener() {
             @Override
@@ -1241,6 +1393,7 @@ public class CreateFeature extends AppCompatActivity  {
                 DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
         RequestQueue queue = Volley.newRequestQueue(getApplicationContext());
+        Log.e(TAG, "SubmitRequest: create-entry request:"+jsonObjectRequest);
         queue.add(jsonObjectRequest);
     }
 

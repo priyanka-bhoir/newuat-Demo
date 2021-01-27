@@ -48,11 +48,13 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.gson.JsonObject;
 import com.priyanka.newuat_demo.Adapter.Adapter;
 import com.priyanka.newuat_demo.Database.Databasehelper;
 import com.priyanka.newuat_demo.MainActivity;
 import com.priyanka.newuat_demo.Models.GetEntry;
 import com.priyanka.newuat_demo.Models.TeamData;
+import com.priyanka.newuat_demo.Models.User;
 import com.priyanka.newuat_demo.R;
 import com.priyanka.newuat_demo.SharedPrefrence;
 import com.priyanka.newuat_demo.drawer;
@@ -78,7 +80,7 @@ public class AccountFragment extends Fragment {
     private static final String ARG_PARAM2 = "param2";
     Databasehelper databasehelper;
     Context context;
-    JsonObjectRequest request,requestteam;
+    JsonObjectRequest request,requestteam,requestuser;
     SharedPrefrence prefrence;
     RequestQueue queue;
     String auth, moduleUrl;
@@ -102,6 +104,8 @@ public class AccountFragment extends Fragment {
     TextView textView;
     ProgressBar progressDialog;
     TeamData teamData;
+    User user;
+
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
@@ -202,6 +206,28 @@ public class AccountFragment extends Fragment {
                             teamData=new TeamData(id,created_at,updated_at,deleted_at,name,description);
                             Log.e(TAG, "onResponse: here we are inserting into team table" );
                             databasehelper.insertTeamMember(teamData);
+                        }
+                    }
+                    if (mParam2.equals("User")){
+                        JSONObject object;
+                        for (int i=0;i<jsonArray.length();i++){
+                            object=jsonArray.getJSONObject(i);
+                            String id=object.getString("id");
+                            String created_at=object.getString("created_at");
+                            String updated_at=object.getString("updated_at");
+                            String deleted_at=object.getString("deleted_at");
+                            String assigned_user_id=object.getString("assigned_user_id");
+                            String name=object.getString("name");
+                            String first_name=object.getString("first_name");
+                            String last_name=object.getString("last_name");
+                            String email=object.getString("email");
+                            String user_type=object.getString("user_type");
+                            String designation=object.getString("designation");
+                            String department=object.getString("department");
+                            String phone=object.getString("phone");
+                            String address=object.getString("address");
+                            user=new User(name,id,created_at,updated_at,deleted_at,assigned_user_id,first_name,last_name,user_type,designation,department,phone,address);
+                            databasehelper.inserUserData(user);
                         }
                     }
                     else{
@@ -342,6 +368,8 @@ public class AccountFragment extends Fragment {
         if (databasehelper.getModule()==false){
             requestteam= (JsonObjectRequest) ReqestModule(moduleUrl+"",auth,"Team");
             queue.add(requestteam);
+            requestuser= (JsonObjectRequest) ReqestModule(moduleUrl+"",auth,"User");
+            queue.add(requestuser);
         }
         request = (JsonObjectRequest) ReqestModule(moduleUrl + "1", auth,mParam2);
         queue.add(request);

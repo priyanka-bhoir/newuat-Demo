@@ -8,6 +8,7 @@
         app:showAsAction="ifRoom"
         android:title="save"
         android:onClick="save"
-        tools:ignore="MenuTitle" />
+        tools:ignore="MenuTitle"
+        />
 
 </menu>

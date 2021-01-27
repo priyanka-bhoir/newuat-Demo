@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.provider.ContactsContract;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
@@ -13,8 +14,10 @@ import com.priyanka.newuat_demo.Models.Dome;
 import com.priyanka.newuat_demo.Models.GetEntry;
 import com.priyanka.newuat_demo.Models.MobileLayout;
 import com.priyanka.newuat_demo.Models.TeamData;
+import com.priyanka.newuat_demo.Models.User;
 import com.priyanka.newuat_demo.Models.module_pojo;
 
+import java.net.PortUnreachableException;
 import java.util.ArrayList;
 
 public class Databasehelper extends SQLiteOpenHelper {
@@ -28,6 +31,7 @@ public class Databasehelper extends SQLiteOpenHelper {
     public static final String LOGIN_JSON="logindata";
     public static final String Table_TEAM="team";
     public static final String Table_mobileLayout_Dome="dom_list";
+    public static final String Table_User="user";
 
     //for data members of table module
     public static final String ID="id";
@@ -57,6 +61,19 @@ public class Databasehelper extends SQLiteOpenHelper {
     //for Storing dome value of mobile layout for spinner
     public static final String DOM_NAME="dom_name";
     public static final String DOM_VALUE="dom_values";
+
+    //  for Storing User Data
+    public static final String ID_user="user_id";
+    public static final String ASSIGNED_USER_ID="assigned_user_id";
+    public static final String FIRST_NAME="first_name";
+    public static final String LAST_NAME="last_name";
+    public static final String EMAIL="email";
+    public static final String USER_TYPE="user_type";
+    public static final String DESIGNATION="designation";
+    public static final String DEPARMENT="department";
+    public static final String PHONE="phone";
+    public static final String ADDRESS="address";
+
     module_pojo data;
     MobileLayout mobileLayout;
     String TAG="Dabasehelper.class";
@@ -88,6 +105,9 @@ public class Databasehelper extends SQLiteOpenHelper {
         //this is for Dom value of mobile layout
         db.execSQL("create table "+Table_mobileLayout_Dome+"("+ID+" integer primary key, "+DOM_NAME+" text,"+DOM_VALUE+" text)");
 
+        // this is user table
+        db.execSQL("create table "+Table_User+"("+ID+" integer primary key, "+ID_user+" text, "+CREATED_AT+" text, "+UPDATED_AT+" text,"+DELETED_AT+" text,"+ASSIGNED_USER_ID+" text, "+NAME+" text, "+FIRST_NAME+" text, "+LAST_NAME+" text,"+ EMAIL+" text, "+USER_TYPE+" text, "+DESIGNATION+" text,"+DEPARMENT+" text, "+PHONE+" text,"+ADDRESS+" text )");
+
     }
 
     @Override
@@ -98,6 +118,7 @@ public class Databasehelper extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS "+Table_GETENTRY_LIST);
         db.execSQL("DROP TABLE IF EXISTS "+Table_TEAM);
         db.execSQL("DROP TABLE IF EXISTS "+Table_mobileLayout_Dome);
+        db.execSQL("DROP TABLE IF EXISTS " + Table_User);
         onCreate(db);
     }
 
@@ -160,6 +181,26 @@ public class Databasehelper extends SQLiteOpenHelper {
         db.insert(Table_GETENTRY_LIST,null,values);
         Log.e(TAG, "insertGetEntryList: Data inserted" );
 
+    }
+
+    public void inserUserData(User user){
+        ContentValues values=new ContentValues();
+        values.put(ID_user,user.getId());
+        values.put(NAME,user.getName());
+        values.put(CREATED_AT,user.getCreated_at());
+        values.put(UPDATED_AT,user.getUpdated_at());
+        values.put(DELETED_AT,user.getDeleted_at());
+        values.put(ASSIGNED_USER_ID,user.getAssigned_user_id());
+        values.put(FIRST_NAME,user.getFirst_name());
+        values.put(LAST_NAME,user.getLast_name());
+        values.put(USER_TYPE,user.getUser_type());
+        values.put(DESIGNATION,user.getDesignation());
+        values.put(DEPARMENT,user.getDepartment());
+        values.put(PHONE,user.getPhone());
+        values.put(ADDRESS,user.getAddress());
+        SQLiteDatabase db=this.getWritableDatabase();
+        db.insert(Table_User,null,values);
+        Log.e(TAG, "inserUserData: Data Inserted");
     }
 
     public void insertDomData(Dome dome){
@@ -321,12 +362,12 @@ public class Databasehelper extends SQLiteOpenHelper {
     public ArrayList<TeamData> fetchAllMemberNames(){
        ArrayList<TeamData> a = new ArrayList<>();
        SQLiteDatabase db=getReadableDatabase();
-       String query="select * FROM "+ Table_TEAM;
+       String query="select * FROM "+ Table_User;
        Cursor cursor=db.rawQuery(query,null);
         Log.e(TAG, "fetchAllMemberNames: "+cursor.getCount());
         if (cursor.moveToFirst()){
             do{
-                String id=cursor.getString(cursor.getColumnIndex(ID_TEAM));
+                String id=cursor.getString(cursor.getColumnIndex(ID_user));
                 String name=cursor.getString(cursor.getColumnIndex(NAME));
                 a.add(new TeamData(id,name));
             }while (cursor.moveToNext());
@@ -334,7 +375,7 @@ public class Databasehelper extends SQLiteOpenHelper {
        return a;
     }
 
-    public String fetchTeamName(String value) {
+    public String fetchUserData(String value) {
         String abc="";
 
 //        String query="select * FROM "+ Table_TEAM;
