@@ -22,9 +22,11 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.NewuatDemo">
-        <activity android:name=".SubModule.AddressPicker"></activity>
+        <activity android:name=".SubModule.AddressPicker"
+            android:windowSoftInputMode="adjustResize"></activity>
         <activity android:name=".SubModule.RelateFieldSelection" />
-        <activity android:name=".CreateFeature" />
+        <activity android:name=".CreateFeature"
+            android:windowSoftInputMode="adjustResize"/>
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.
              (See the file "res/values/google_maps_api.xml").

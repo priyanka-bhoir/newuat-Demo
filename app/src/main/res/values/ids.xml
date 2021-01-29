@@ -21,4 +21,5 @@
     <item name="name" type="id"/>
     <item name="option" type="id" />
     <item name="tableName" type="id" />
+    <item name="primary" type="id" />
 </resources>

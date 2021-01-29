@@ -30,6 +30,9 @@ public class AddressPicker extends AppCompatActivity {
         Intent i=getIntent();
         key=i.getStringExtra("key");
 
+        // toolbar title
+        getSupportActionBar().setTitle("Address Picker");
+
         streettxt=findViewById(R.id.street);
         areatxt=findViewById(R.id.area);
         citytxt=findViewById(R.id.city);
@@ -38,6 +41,8 @@ public class AddressPicker extends AppCompatActivity {
         postalcodetxt=findViewById(R.id.postalCode);
 
         addresstypetxt=findViewById(R.id.addresstype);
+        addresstypetxt.setPadding(10,40,10,40);
+
 
 
         ArrayList<String> arrayList =new ArrayList<>();

@@ -15,9 +15,12 @@ import android.os.Bundle;
 import android.text.InputFilter;
 import android.text.InputType;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.CheckBox;
@@ -25,6 +28,7 @@ import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -99,7 +103,7 @@ public class CreateFeature extends AppCompatActivity  {
     JSONArray array;
 
     //Layouts
-    LinearLayout linearLayout;
+    LinearLayout linearLayout,rootlinear;
 
     //Widget
     TextInputEditText textView,textView1;
@@ -112,6 +116,8 @@ public class CreateFeature extends AppCompatActivity  {
     JSONObject jsonObject;
 
     SharedPrefrence prefrence;
+
+    ProgressBar progressBar;
 
 //    HashMap<String ?>
 
@@ -163,6 +169,7 @@ public class CreateFeature extends AppCompatActivity  {
         //variables initialization
         array=detail.selectedfileds(module,databasehelper,"edit");
         linearLayout=findViewById(R.id.activty_create_linear_layout);
+        rootlinear=findViewById(R.id.rootlinear);
         getSupportActionBar().hide();
 //        android.widget.Toolbar toolbar=findViewById(R.id.create_toolbar);
         Toolbar toolbar=findViewById(R.id.create_toolbar);
@@ -183,9 +190,12 @@ public class CreateFeature extends AppCompatActivity  {
         // fetching module key
 
         backEndName=databasehelper.getBackendname(module);
-
-
         Log.e(TAG, "onCreate:backEndName===> "+backEndName );
+
+        // this is for progress bar
+//        LayoutInflater inflater = LayoutInflater.from(getApplicationContext());
+//        LayoutInflater inflater= (LayoutInflater) getApplicationContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+//        progressBar = (ProgressBar ) inflater.inflate(R.layout.small_progress_bar,this,true);
 
         //functions calling
         createLayout(array,getApplicationContext(),linearLayout);
@@ -239,35 +249,32 @@ public class CreateFeature extends AppCompatActivity  {
 //            textInputEditText.setInputType(InputType.TYPE_CLASS_TEXT);
 //        }
 
-        checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                Log.e(TAG, "onCheckedChanged: "+isChecked+" buttonView==>"+buttonView.isChecked());
-                if (isChecked){
-                    textInputEditText.setText("");
-                    textInputEditText.setFocusable(false);
-                    textInputEditText.setClickable(false);
+        checkBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            Log.e(TAG, "onCheckedChanged: "+isChecked+" buttonView==>"+buttonView.isChecked());
+            if (isChecked){
+                textInputEditText.setText("");
+                textInputEditText.setFocusable(false);
+                textInputEditText.setClickable(false);
 //                    textInputEditText.setEnabled(true);
-                    textInputEditText.setCursorVisible(false);
+                textInputEditText.setCursorVisible(false);
 //                    textInputEditText.setKeyListener(null);
-                    textInputEditText.setOnClickListener((View view) -> {
-                        Intent intent=new Intent(CreateFeature.this, RelateFieldSelection.class);
-                        intent.putExtra("module", module);
-                        startActivityForResult(intent,12);});
-                }
-                else {
-
-                    textInputEditText.setFocusable(true);
-                    textInputEditText.setClickable(true);
-                    textInputEditText.requestFocus();
-                    textInputEditText.setEnabled(true);
-                    textInputEditText.setCursorVisible(true);
-                    textInputEditText.setOnClickListener(null);
-                    textInputEditText.setFocusableInTouchMode(true);
-                    textInputEditText.setInputType(InputType.TYPE_CLASS_TEXT);
-                }
-
+                textInputEditText.setOnClickListener((View view) -> {
+                    Intent intent=new Intent(CreateFeature.this, RelateFieldSelection.class);
+                    intent.putExtra("module", module);
+                    startActivityForResult(intent,12);});
             }
+            else {
+
+                textInputEditText.setFocusable(true);
+                textInputEditText.setClickable(true);
+                textInputEditText.requestFocus();
+                textInputEditText.setEnabled(true);
+                textInputEditText.setCursorVisible(true);
+                textInputEditText.setOnClickListener(null);
+                textInputEditText.setFocusableInTouchMode(true);
+                textInputEditText.setInputType(InputType.TYPE_CLASS_TEXT);
+            }
+
         });
         linearLayout1.addView(checkBox);
         textInputLayout.addView(textInputEditText);
@@ -381,6 +388,16 @@ public class CreateFeature extends AppCompatActivity  {
         if (typr.equals("currency")){
             textInputEditText.setInputType(InputType.TYPE_CLASS_NUMBER);
         }
+        if (typr.equals("textarea")){
+            Log.e(TAG, "CreateTextField: yeah text area called=>"+key);
+            textInputEditText.setOverScrollMode(View.SCROLL_AXIS_VERTICAL);
+            textInputEditText.setSingleLine(false);
+            textInputEditText.setMaxLines(10);
+            textInputEditText.setLines(3);
+            textInputEditText.setGravity(Gravity.TOP | Gravity.START);
+            textInputEditText.setImeOptions(EditorInfo.IME_FLAG_NO_ENTER_ACTION);
+            textInputEditText.setInputType(InputType.TYPE_CLASS_TEXT|InputType.TYPE_TEXT_FLAG_MULTI_LINE);
+        }
         if (required.equals("1")){
             textInputLayout.setHint(key+"*");
         }else{
@@ -450,7 +467,7 @@ public class CreateFeature extends AppCompatActivity  {
                 editText.setTag(R.id.required,required);
                 editText.setTag(R.id.module,module);
                 editText.setTag(R.id.name,backend_name);
-                editText.setTag(R.id.tableName);
+                editText.setTag(R.id.tableName,tableName);
                 editText.setPadding(10,40,10,40);
                 textInputLayout.addView(editText);
                 linearLayout.addView(textInputLayout);
@@ -462,6 +479,7 @@ public class CreateFeature extends AppCompatActivity  {
                     Log.e(TAG, "onClick: this is default case of fraagmnet==>"+module);
                     Intent intent=new Intent(CreateFeature.this, RelateFieldSelection.class);
                     intent.putExtra("module",module);
+                    intent.putExtra("key",key);
                     startActivityForResult(intent,10);
                 });
             }
@@ -673,18 +691,20 @@ public class CreateFeature extends AppCompatActivity  {
         textInputEditText.setTag(R.id.key,key);
         textInputEditText.setTag(R.id.required,required);
         textInputEditText.setTag(R.id.name,backend_name);
+        textInputEditText.setTag(R.id.primary,true);
         textInputEditText.setFocusable(true);
+        textInputEditText.requestFocus();
         if (key.equals("Team")){
             textInputEditText.setFocusable(false);
             textInputEditText.setTag(R.id.key,key+indexOfMyView);
-
+            textInputEditText.setText("ALL");
         }
         if (typr.equals("multi-address")){
             textInputEditText.setFocusable(false);
             textInputEditText.setTag(R.id.key,key+indexOfMyView);
         }
         textInputEditText.setInputType(typeClass);
-        textInputEditText.setFocusable(true);
+//        textInputEditText.setFocusable(true);
         if (key.equals("Phone")){
             textInputEditText.setFilters(new InputFilter[]{new InputFilter.LengthFilter(10)});
         }
@@ -706,6 +726,8 @@ public class CreateFeature extends AppCompatActivity  {
         if (indexOfMyView>0){
             imageView1.setImageResource(R.drawable.ic_baseline_clear_24);
             imageView1.setTag(R.id.tag,"sub");
+            textInputEditText.setText("");
+            textInputEditText.setTag(R.id.primary,false);
         }
 
         linearLayout.addView(linearLayout1,indexOfMyView);
@@ -771,6 +793,7 @@ public class CreateFeature extends AppCompatActivity  {
 //                                        Log.e("Asmita==>"," ====== ELSEEEEE ====== ");
                                         textInputEditText1.setError("Empty");
                                         textInputEditText1.setFocusable(true);
+                                        textInputEditText.requestFocus();
                                     }
                                 }
                             }
@@ -836,7 +859,8 @@ public class CreateFeature extends AppCompatActivity  {
                 Log.e(TAG, "onActivityResult: "+ name+"|| "+module);
                 // loop through the existing layout and set text at relate field
                 String module1=databasehelper.getBackendname(module);
-                setRelatedata(name, module1,id);
+                String key=data.getStringExtra("key");
+                setRelatedata(name, module1,id,key);
 
             }
         }else if (requestCode==11){
@@ -855,8 +879,9 @@ public class CreateFeature extends AppCompatActivity  {
                 // this is for text-relationship attribute
                 name=data.getStringExtra("name");
                 module=data.getStringExtra("module");
+                id=data.getStringExtra("id");
                 Log.e(TAG, "onActivityResult: "+ name+"|| "+module);
-                textRelationship(name,module);
+                textRelationship(name,module,id);
             }
         }
         else if (requestCode==19){
@@ -891,7 +916,7 @@ public class CreateFeature extends AppCompatActivity  {
 
     }
 
-    private void textRelationship(String name, String module) {
+    private void textRelationship(String name, String module, String id) {
         for(int i=0;i<linearLayout.getChildCount();i++){
             if (linearLayout.getChildAt(i) instanceof LinearLayout){
                 LinearLayout linearLayout1 = (LinearLayout) linearLayout.getChildAt(i);
@@ -902,6 +927,7 @@ public class CreateFeature extends AppCompatActivity  {
                         TextInputLayout textInputLayout= (TextInputLayout) linearLayout1.getChildAt(j);
                         TextInputEditText textInputEditText= (TextInputEditText) textInputLayout.getEditText();
                         textInputEditText.setText(name);
+                        textInputEditText.setTag(R.id.id,id);
                         if (textInputEditText.getTag(R.id.module).equals(module)){
                         }
                     }
@@ -964,7 +990,7 @@ public class CreateFeature extends AppCompatActivity  {
     }
 
 
-    private void setRelatedata(String name, String module,String id) {
+    private void setRelatedata(String name, String module,String id,String key) {
 
         for(int i=0;i<linearLayout.getChildCount();i++){
             if (linearLayout.getChildAt(i) instanceof TextInputLayout) {
@@ -972,7 +998,8 @@ public class CreateFeature extends AppCompatActivity  {
                 EditText editText= (EditText) textInputLayout.getEditText();
                 try {
                     Log.e(TAG, "setRelatedata: "+editText.getTag(R.id.key));
-                    if (editText.getTag(R.id.type).equals("relate")&&editText.getTag(R.id.module).equals(module)){
+                    Log.e(TAG, "setRelatedata: "+editText.getTag(R.id.id)+" || -->" + id);
+                    if (editText.getTag(R.id.type).equals("relate")&&editText.getTag(R.id.key).equals(key)){
                         editText.setText(name);
                         editText.setTag(R.id.id,id);
                         Log.e(TAG, "setRelatedata: hey you got an edit txt" +editText.getTag(R.id.key)+" || ==:  "+editText.getTag(R.id.id));
@@ -990,6 +1017,8 @@ public class CreateFeature extends AppCompatActivity  {
         JSONObject jsonObject1=new JSONObject();
         JSONObject jsonObject2=new JSONObject();
         JSONObject jsonObject3=new JSONObject();
+//        JSONObject jsonObject4=new JSONObject();
+
         JSONArray relateArray=new JSONArray();
         Boolean flag=false;
         Boolean chekboxflag=false;
@@ -1037,7 +1066,7 @@ public class CreateFeature extends AppCompatActivity  {
 //                                Log.e(TAG, "save:editText.getTag(R.id.id) ==> "+editText.getTag(R.id.id) );
 //                                jsonObject4.put(editText.getTag(R.id.name).toString(),editText.getTag(R.id.id).toString());
 //                                break;
-//                            default:
+                            default:
                                 if (!editText.getText().toString().isEmpty()){
                                     JSONObject jsonObject5=new JSONObject();
                                     jsonObject5.put("id",editText.getTag(R.id.id));
@@ -1137,6 +1166,7 @@ public class CreateFeature extends AppCompatActivity  {
                         String primary;
                         String invalid;
                         String unsubscribed;
+                        String field = null;
 
                         try {
                             switch (linearLayout1.getTag(R.id.key).toString()) {
@@ -1144,11 +1174,13 @@ public class CreateFeature extends AppCompatActivity  {
                                     layoutkey = "hiddenPhone";
                                     table_name = "phone_numbers";
                                     related_table_name = "phone_numbers_rel";
+                                    field="phone_number";
                                     break;
                                 case "Email":
                                     layoutkey = "hiddenEmail";
                                     table_name = "email_addresses";
                                     related_table_name = "email_address_rel";
+                                    field="email_address";
 
                                     break;
                                 case "Address":
@@ -1187,12 +1219,13 @@ public class CreateFeature extends AppCompatActivity  {
                                     try {
                                         jsonObject.put("table_name", table_name);
                                         jsonObject.put("related_table_name", related_table_name);
-                                        jsonObject.put(table_name, textInputEditText.getText());
-                                        if (k == 0) {
-                                            jsonObject.put("primary", true);
-                                        } else {
-                                            jsonObject.put("primary", false);
-                                        }
+                                        jsonObject.put(field, textInputEditText.getText());
+//                                        if (k == 0) {
+//                                            jsonObject.put("primary", true);
+//                                        } else {
+//                                            jsonObject.put("primary", false);
+//                                        }
+                                        jsonObject.put("primary",textInputEditText.getTag(R.id.primary));
                                         jsonObject.put("invalid", false);
                                         jsonObject.put("unsubscribed", false);
                                         Log.e(TAG, "save:multifield jsonObject ==> " + jsonObject);
@@ -1342,6 +1375,17 @@ public class CreateFeature extends AppCompatActivity  {
                              break;
                          }
                      }
+                     if (linearLayout1.getChildAt(j) instanceof Spinner){
+                         Spinner spinner= (Spinner) linearLayout1.getChildAt(j);
+//                         Log.e(TAG, "Validate:spinner.getTag(R.id.required)==> out of if==> " + spinner.getTag(R.id.required));
+                         if (spinner.getTag(R.id.required).toString().equals("1") && spinner.getSelectedItem().toString().equals("")){
+//                             Log.e(TAG, "Validate: "+ spinner.getTag(R.id.required).toString().equals("1")+" || "+spinner.getSelectedItem().toString().equals(""));
+//                             Log.e(TAG, "Validate:spinner.getTag(R.id.required)==>  " + spinner.getTag(R.id.required));
+                             spinner.requestFocus();
+                             ((TextView)spinner.getSelectedView()).setError("Required");
+                             flag=false;
+                         }
+                     }
                  }
             }
         }
@@ -1351,6 +1395,7 @@ public class CreateFeature extends AppCompatActivity  {
     }
 
     private void SubmitRequest(JSONObject jsonObject) {
+//        progressBar.setVisibility(View.VISIBLE);
         Log.e(TAG, "SubmitRequest:this is ==>> "+jsonObject);
         String url=prefrence.getURl()+ variables.version+variables.URL_CREATE;
         String auth=variables.BEARER+prefrence.getToken();
@@ -1360,6 +1405,7 @@ public class CreateFeature extends AppCompatActivity  {
                 String error;
                 Log.e(TAG, "onResponse: "+ response );
                 try {
+//                    progressBar.setVisibility(View.GONE);
                     error=response.getString("error_message");
                     Toast.makeText(getApplicationContext(),error,Toast.LENGTH_LONG).show();
                 } catch (JSONException e) {

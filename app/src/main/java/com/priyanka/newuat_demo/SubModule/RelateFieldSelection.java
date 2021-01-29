@@ -47,6 +47,7 @@ public class RelateFieldSelection extends AppCompatActivity implements com.priya
     ListView listView;
     ArrayList<HashMap<String, String>> map;
     String name;
+    String key="";
 
 
 
@@ -59,6 +60,12 @@ public class RelateFieldSelection extends AppCompatActivity implements com.priya
         Intent intent=getIntent();
         module=intent.getStringExtra("module");
         name=intent.getStringExtra("name");
+        try {
+
+            key=intent.getStringExtra("key");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
 
         Log.e(TAG, "onCreate: "+module);
@@ -103,7 +110,7 @@ public class RelateFieldSelection extends AppCompatActivity implements com.priya
                     }
                     map.add(hashMap);
                     Log.e(TAG, "onResponse: "+map );
-                    adapter= new com.priyanka.newuat_demo.Adapter.Adapter(getApplicationContext(),10,map,mParam1,this,name);
+                    adapter= new com.priyanka.newuat_demo.Adapter.Adapter(getApplicationContext(),10,map,mParam1,this,name,key);
                     listView.setAdapter((ListAdapter) adapter);
                 }
             } catch (JSONException e) {

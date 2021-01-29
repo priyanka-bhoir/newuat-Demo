@@ -36,6 +36,7 @@ import com.google.android.material.textfield.TextInputLayout;
 import com.priyanka.newuat_demo.Detail;
 import com.priyanka.newuat_demo.Database.Databasehelper;
 import com.priyanka.newuat_demo.R;
+import com.priyanka.newuat_demo.SubModule.RelateFieldSelection;
 import com.priyanka.newuat_demo.fragment.AccountFragment;
 
 import org.json.JSONArray;
@@ -62,6 +63,7 @@ public class Adapter extends ArrayAdapter<HashMap<String, String>> implements Ac
     int resource;
     OnItemClickLister mlistener;
     String flag;
+    String key;
 
     public Adapter(Context applicationContext, int i, ArrayList<HashMap<String, String>> map, String mParam1, Activity activity, String flag) {
         // used for multi relate field
@@ -89,9 +91,15 @@ public class Adapter extends ArrayAdapter<HashMap<String, String>> implements Ac
     String name,id;
     String displaytext1, displaytext2, displaytext3, displaytext4, displaytext5;
 
-    public Adapter(@NonNull Context context,int e){
+    public Adapter(@NonNull Context context, int e, ArrayList<HashMap<String, String>> map, String mParam1, Activity relateFieldSelection, String name, String key){
         super(context,e);
         this.context=context;
+        this.hashMapArrayList = map;
+        this.mParam1 = mParam1;
+        this.activity = relateFieldSelection;
+        this.resource=e;
+        this.name=name;
+        this.key=key;
 
     }
 
@@ -273,7 +281,8 @@ public class Adapter extends ArrayAdapter<HashMap<String, String>> implements Ac
                     intent.putExtra("name",s);
                     intent.putExtra("id",viewHolder.id);
                     intent.putExtra("module",mParam1);
-                    intent.putExtra("flag",flag);
+                    intent.putExtra("flag",name);
+                    intent.putExtra("key",key);
 
 //                    startActivityForResult(activity,intent,10,null);
                     activity.setResult(Activity.RESULT_OK,intent);
@@ -288,6 +297,7 @@ public class Adapter extends ArrayAdapter<HashMap<String, String>> implements Ac
                     String s=viewHolder.textView1.getText().toString().substring(5);
                     intent.putExtra("name",s);
                     intent.putExtra("module",mParam1);
+                    intent.putExtra("id",viewHolder.id);
 
                     activity.setResult(Activity.RESULT_OK,intent);
                     activity.finish();
