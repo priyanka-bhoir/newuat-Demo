@@ -302,6 +302,9 @@ public class Adapter extends ArrayAdapter<HashMap<String, String>> implements Ac
                     activity.setResult(Activity.RESULT_OK,intent);
                     activity.finish();
                 }
+                else if (resource==20){
+                    Intent intent=new Intent();
+                }
             }
         });
 

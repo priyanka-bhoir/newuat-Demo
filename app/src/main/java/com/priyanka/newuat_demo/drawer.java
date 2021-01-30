@@ -98,17 +98,9 @@ public class drawer extends AppCompatActivity {
         String moduleUrl = url+version+"module-list";
         String mobileLayoutURL=url+version+"mobile-layout";
 
-//        FloatingActionButton fab = findViewById(R.id.fab);
         queue = Volley.newRequestQueue(this);
-//        fab.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                Snackbar.make(view, "hey Welcome to world", Snackbar.LENGTH_LONG)
-//                        .setAction("Action", null).show();
-//            }
-//        });
+
         intent = getIntent();
-//        String token = intent.getStringExtra("token");
         String tokenpref=prefrence.getToken();
         String name=prefrence.getUname();
         Log.e(TAG, "onCreate:tokenpref "+tokenpref );
@@ -158,8 +150,6 @@ public class drawer extends AppCompatActivity {
         toolbar.setNavigationIcon(R.drawable.ic_baseline_dehaze_24);
 
     }
-
-
 
     private void selectDrawerItem(MenuItem item) {
         Fragment fragment=null;
