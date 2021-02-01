@@ -4,6 +4,7 @@ import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.TimePickerDialog;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.EditText;
 import android.widget.TimePicker;
 
@@ -17,6 +18,8 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
+import static android.content.ContentValues.TAG;
+
 public class SelectTimeFragment extends DialogFragment implements TimePicker.OnTimeChangedListener {
     private EditText editText;
     //    public int AMPM;
@@ -29,11 +32,11 @@ public class SelectTimeFragment extends DialogFragment implements TimePicker.OnT
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         final Calendar calendar = Calendar.getInstance();
-        sdf = new SimpleDateFormat("hh:mm");
+        sdf = new SimpleDateFormat("hh:mm:a");
 
         int hourOfDay = calendar.get(Calendar.HOUR_OF_DAY);
         int min = calendar.get(Calendar.MINUTE);
-
+//        int am_pm=calendar.get(Calendar.AM_PM);
         if (calendar.get(Calendar.AM_PM) == Calendar.AM)
             am_pm = "AM";
         else if (calendar.get(Calendar.AM_PM) == Calendar.PM)
@@ -48,21 +51,29 @@ public class SelectTimeFragment extends DialogFragment implements TimePicker.OnT
     }
     public void populateSetTime(EditText edit,  int hourOfDay, int minute)
     {
-        Date date = new Date();
+        Date date = null;
         String s;
 //        s=String.format("%02d:%02d", hourOfDay , minute);
-        String val= String.valueOf(hourOfDay+minute);
+//        Log.e(TAG, "populateSetTime: "+hourOfDay+" || "+ minute );
+        String val= hourOfDay+":"+minute;
+//        Log.e(TAG, "populateSetTime: "+val);
         SimpleDateFormat sdf = new SimpleDateFormat("hh:mm");
         try {
             date=sdf.parse(val);
+            Log.e(TAG, "populateSetTime:date==>> "+date);
+            SimpleDateFormat simpleDateFormat=new SimpleDateFormat("hh:mm:a");
+            s= simpleDateFormat.format(date);
+            edit.setText(s);
+//            Log.e(TAG, "populateSetTime: "+ s );
         } catch (ParseException e) {
             e.printStackTrace();
+//            Log.e(TAG, "populateSetTim/e: "+ e );
         }
+
 
 //        String s= String.valueOf(hourOfDay+minute);
 //        sdf.format(s);
-        s= sdf.format(date);
-        edit.setText(s+" "+am_pm);
+
     }
 
 }

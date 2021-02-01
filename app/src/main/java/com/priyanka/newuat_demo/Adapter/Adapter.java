@@ -114,7 +114,7 @@ public class Adapter extends ArrayAdapter<HashMap<String, String>> implements Ac
 
     @Override
     public int getCount() {
-        Log.e(TAG, "getCount: " + hashMapArrayList.size());
+//        Log.e(TAG, "getCount: " + hashMapArrayList.size());
         return hashMapArrayList.size();
     }
 
@@ -130,20 +130,20 @@ public class Adapter extends ArrayAdapter<HashMap<String, String>> implements Ac
         databasehelper = new Databasehelper(context);
         object1 = new JSONArray();
         account = new AccountFragment(mParam1);
-        Log.e(TAG, "position=>" + position);
+//        Log.e(TAG, "position=>" + position);
         HashMap<String, String> map = hashMapArrayList.get(position);
         viewHolder.id=map.get("id");
-        Log.e(TAG, "getView: this is id which is toubling uhhh:"+id);
+//        Log.e(TAG, "getView: this is id which is toubling uhhh:"+id);
         object1 = account.selectedfield(databasehelper, mParam1);
-        Log.e(TAG, "getView:object1==> " + object1 + " param: " + mParam1);
+//        Log.e(TAG, "getView:object1==> " + object1 + " param: " + mParam1);
         try {
             displaytext1 = getdisplayname(object1.getString(0));
             displaytext2 = getdisplayname(object1.getString(1));
             displaytext3 = getdisplayname(object1.getString(2));
             displaytext4 = getdisplayname(object1.getString(3));
             displaytext5 = getdisplayname(object1.getString(4));
-            Log.e(TAG, "getView:displaytext1: " + displaytext1);
-            Log.e(TAG, "getView:object1.getString(4): " + object1.getString(4));
+//            Log.e(TAG, "getView:displaytext1: " + displaytext1);
+//            Log.e(TAG, "getView:object1.getString(4): " + object1.getString(4));
             String user = null;
             try {
                 user = object1.getString(4);
@@ -170,12 +170,12 @@ public class Adapter extends ArrayAdapter<HashMap<String, String>> implements Ac
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        Log.e(TAG, "getView: you got a textview at postion==> " + position);
+//        Log.e(TAG, "getView: you got a textview at postion==> " + position);
 
         viewHolder.imageView1.setOnClickListener(v -> {
             try {
                 if (object1.getString(3).equals("phone")) {
-                    Log.e(TAG, "getView:map.get(object1.getString(3))=> " + map.get(object1.getString(3)));
+//                    Log.e(TAG, "getView:map.get(object1.getString(3))=> " + map.get(object1.getString(3)));
                     if (!(map.get(object1.getString(3)).equals(""))) {
                         String num1 = map.get(object1.getString(3));
                         if (checkSelfPermission(activity, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {

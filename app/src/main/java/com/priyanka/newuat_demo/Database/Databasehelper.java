@@ -340,7 +340,7 @@ public class Databasehelper extends SQLiteOpenHelper {
         if (cursor!=null){
             cursor.moveToFirst();
             data=cursor.getString(0);
-            Log.e(TAG, "getFrontEndname: "+data );
+//            Log.e(TAG, "getFrontEndname: "+data );
         }
         return data;
     }
@@ -354,7 +354,7 @@ public class Databasehelper extends SQLiteOpenHelper {
         if (cursor!=null){
             cursor.moveToFirst();
             display_label=cursor.getString(0);
-            Log.e(TAG, "getdisplaylabel: "+display_label );
+//            Log.e(TAG, "getd/isplaylabel: "+display_label );
         }
         return display_label;
     }
@@ -364,7 +364,7 @@ public class Databasehelper extends SQLiteOpenHelper {
        SQLiteDatabase db=getReadableDatabase();
        String query="select * FROM "+ Table_User;
        Cursor cursor=db.rawQuery(query,null);
-        Log.e(TAG, "fetchAllMemberNames: "+cursor.getCount());
+//        Log.e(TAG, "fetchAllMemberNames: "+cursor.getCount());
         if (cursor.moveToFirst()){
             do{
                 String id=cursor.getString(cursor.getColumnIndex(ID_user));
@@ -388,14 +388,14 @@ public class Databasehelper extends SQLiteOpenHelper {
         if (cursor!=null){
             cursor.moveToFirst();
             abc=cursor.getString(cursor.getColumnIndex(NAME));
-            Log.e(TAG, "getlayoutdefs:cursor "+cursor.getString(cursor.getColumnIndex(NAME)));
+//            Log.e(TAG, "getlayoutdefs:cursor "+cursor.getString(cursor.getColumnIndex(NAME)));
         }
-        Log.e(TAG, "fetchTeamName: "+abc );
+//        Log.e(TAG, "fetchTeamName: "+abc );
         return abc;
     }
     public String getdefs(String module,String field){
         String abc="";
-        Log.e(TAG, "getdefs: "+module+":"+field);
+//        Log.e(TAG, "getdefs: "+module+":"+field);
         SQLiteDatabase db=getReadableDatabase();
         String selection=MODULE_LABEL+"=?";
         Cursor cursor=db.query(Table_MOBILE_LAYOUT, new String[]{field}, selection, new String[]{module},null,null,null);

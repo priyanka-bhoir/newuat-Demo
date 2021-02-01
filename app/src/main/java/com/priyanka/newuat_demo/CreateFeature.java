@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.DialogFragment;
 
 import android.annotation.SuppressLint;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
@@ -129,6 +130,8 @@ public class CreateFeature extends AppCompatActivity  {
 
     HashMap<String,String> addressMap;
 
+    ProgressDialog dialog;
+
 
 
     //Interfaces
@@ -196,6 +199,10 @@ public class CreateFeature extends AppCompatActivity  {
         //variables
         id=prefrence.getId();
 
+        //dialog
+        dialog=new ProgressDialog(CreateFeature.this);
+        dialog.setCancelable(true);
+        dialog.setMessage("Loading...........");
         // fetching module key
 
         backEndName=databasehelper.getBackendname(module);
@@ -327,6 +334,7 @@ public class CreateFeature extends AppCompatActivity  {
                         case "textarea":
                         case "comment":
                         case "currency":
+                        case "decimal":
                             textInputLayout= new TextInputLayout(CreateFeature.this);
                             CreateTextField(textInputLayout,typr,key,required,backend_name,textinputparams);
                             break;
@@ -387,6 +395,12 @@ public class CreateFeature extends AppCompatActivity  {
                 e.printStackTrace();
             }
         }
+        // function for reqesting focus on first field
+        requestFocusOnField(linearLayout);
+    }
+
+    private void requestFocusOnField(LinearLayout linearLayout) {
+        linearLayout.getChildAt(0).requestFocus();
     }
 
     private void CreateTextField(TextInputLayout textInputLayout, String typr, String key, String required, String backend_name, LinearLayout.LayoutParams textinputparams) {
@@ -398,7 +412,7 @@ public class CreateFeature extends AppCompatActivity  {
         textInputEditText.setTag(R.id.required,required);
         textInputEditText.setTag(R.id.name,backend_name);
         textInputEditText.setLayoutParams(textinputparams);
-        if (typr.equals("currency")){
+        if (typr.equals("currency") || typr.equals("decimal")){
             textInputEditText.setInputType(InputType.TYPE_CLASS_NUMBER);
         }
         if (typr.equals("textarea")||typr.equals("comment")){
@@ -766,15 +780,17 @@ public class CreateFeature extends AppCompatActivity  {
         textInputEditText.setTag(R.id.primary,true);
         textInputEditText.setFocusable(true);
         textInputEditText.requestFocus();
-        if (key.equals("Team")){
+        if (typr.equals("relate")){
             textInputEditText.setFocusable(false);
             textInputEditText.setTag(R.id.key,key+indexOfMyView);
             textInputEditText.setText("ALL");
             textInputEditText.setTag(R.id.id,"1");
+            hideKeyboard();
         }
         if (typr.equals("multi-address")){
             textInputEditText.setFocusable(false);
             textInputEditText.setTag(R.id.key,key+indexOfMyView);
+            hideKeyboard();
         }
         textInputEditText.setInputType(typeClass);
 //        textInputEditText.setFocusable(true);
@@ -901,6 +917,7 @@ public class CreateFeature extends AppCompatActivity  {
         }
     });
     textInputEditText.setOnClickListener(v -> {
+        hideKeyboard();
         Intent intent;
         if (textInputEditText.getTag(R.id.type).equals("relate")){
             intent=new Intent(CreateFeature.this,RelateFieldSelection.class);
@@ -1013,7 +1030,7 @@ public class CreateFeature extends AppCompatActivity  {
             if (linearLayout.getChildAt(i) instanceof LinearLayout){
                 LinearLayout linearLayout1 = (LinearLayout) linearLayout.getChildAt(i);
                 for (int j=0;j<linearLayout1.getChildCount();j++){
-                    Log.e(TAG, "textRelationship: "+linearLayout1.getChildAt(j) );
+//                    Log.e(TAG, "textRelationship: "+linearLayout1.getChildAt(j) );
                     if (linearLayout1.getChildAt(j) instanceof TextInputLayout){
                         Log.e(TAG, "textRelationship: hey i am your TextInputLayout(" );
                         TextInputLayout textInputLayout= (TextInputLayout) linearLayout1.getChildAt(j);
@@ -1119,9 +1136,10 @@ public class CreateFeature extends AppCompatActivity  {
         // Creating an ArrayList of values
         ArrayList<String> listOfValues
                 = new ArrayList<>(values);
-//        JSONObject jsonObject4=new JSONObject();
 
         JSONArray relateArray=new JSONArray();
+        JSONObject relateobject=new JSONObject();
+
         Boolean flag=false;
         Boolean chekboxflag=false;
         Boolean requireflag=false;
@@ -1142,7 +1160,7 @@ public class CreateFeature extends AppCompatActivity  {
                 // for textInputEdittxt
                 if (textInputLayout.getEditText() instanceof TextInputEditText){
                     TextInputEditText textInputEditText = (TextInputEditText) textInputLayout.getEditText();
-//                Log.e(TAG, "save: "+ textInputEditText.getText()+" || " +textInputEditText.getTag(R.id.name));
+                Log.e(TAG, "save: "+ textInputEditText.getText()+" || " +textInputEditText.getTag(R.id.name));
                     if (textInputEditText.getTag(R.id.type).toString().equals("comment")&&!textInputEditText.getText().toString().isEmpty()){
                         Log.e(TAG, "save: you got a comment field==:");
                         JSONArray comment=new JSONArray();
@@ -1164,7 +1182,7 @@ public class CreateFeature extends AppCompatActivity  {
                 }
                 if (textInputLayout.getEditText() instanceof EditText){
                     // for realte field
-                    JSONObject jsonObject4=new JSONObject();
+//                    JSONObject jsonObject4=new JSONObject();
                     EditText editText=textInputLayout.getEditText();
                     try {
                         String s=editText.getTag(R.id.name).toString();
@@ -1188,8 +1206,9 @@ public class CreateFeature extends AppCompatActivity  {
                                     jsonObject5.put("module_name",editText.getTag(R.id.module));
                                     jsonObject5.put("table_name",editText.getTag(R.id.tableName));
                                     jsonObject5.put("current_module",backEndName);
-                                    jsonObject4.put(editText.getTag(R.id.name).toString(), jsonObject5);
-                                    relateArray.put(jsonObject4);
+                                    relateobject.put(editText.getTag(R.id.name).toString(), jsonObject5);
+                                    relateArray.put(relateobject);
+                                    Log.e(TAG, "save: relateArray==>"+relateArray );
                                     flag=true;
                                 }
                         }
@@ -1232,8 +1251,9 @@ public class CreateFeature extends AppCompatActivity  {
                                     jsonObject5.put("module_name",textInputEditText.getTag(R.id.module));
                                     jsonObject5.put("table_name",textInputEditText.getTag(R.id.tableName));
                                     jsonObject5.put("current_module",backEndName);
-                                    jsonObject4.put(textInputEditText.getTag(R.id.name).toString(), jsonObject5);
-                                    relateArray.put(jsonObject4);
+                                    relateobject.put(textInputEditText.getTag(R.id.name).toString(), jsonObject5);
+                                    if (relateArray.length()<0)
+                                        relateArray.put(relateobject);
                                     flag=true;
                                 } catch (JSONException e) {
                                     e.printStackTrace();
@@ -1244,15 +1264,17 @@ public class CreateFeature extends AppCompatActivity  {
                             try {
                                 Log.e(TAG, "save: relateArray==> "+relateArray );
                                 jsonObject3.put("related_modules",relateArray);
+                                chekboxflag=false;
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             }
 
-                        }else {
+                        }
+                        if (chekboxflag)
+                        {
                             Log.e(TAG, "save: textInputEditText.getTag(R.id.name) ==> "+textInputEditText.getTag(R.id.name) );
                             textInputEditText.setTag(R.id.name,textInputEditText.getTag(R.id.name)+"_name");
                         }
-
                         try {
                             jsonObject3.put(textInputEditText.getTag(R.id.name).toString(), textInputEditText.getText().toString());
                         } catch (JSONException e) {
@@ -1530,6 +1552,7 @@ public class CreateFeature extends AppCompatActivity  {
 
     private void SubmitRequest(JSONObject jsonObject) {
 //        progressBar.setVisibility(View.VISIBLE);
+        dialog.show();
         Log.e(TAG, "SubmitRequest:this is ==>> "+jsonObject);
         String url=prefrence.getURl()+ variables.version+variables.URL_CREATE;
         String auth=variables.BEARER+prefrence.getToken();
@@ -1537,14 +1560,16 @@ public class CreateFeature extends AppCompatActivity  {
             @Override
             public void onResponse(JSONObject response) {
                 String error;
-                Log.e(TAG, "onResponse: "+ response );
+//                Log.e(TAG, "onResponse: "+ response );
                 try {
+                    dialog.cancel();
 //                    progressBar.setVisibility(View.GONE);
                     error=response.getString("error_message");
                     Toast.makeText(getApplicationContext(),error,Toast.LENGTH_LONG).show();
                 } catch (JSONException e) {
                     e.printStackTrace();
-                    Toast.makeText(getApplicationContext(),"Data Inserted...!",Toast.LENGTH_LONG).show();
+                    dialog.cancel();
+                    Toast.makeText(getApplicationContext(),"Record Created Sucessfully...!",Toast.LENGTH_LONG).show();
                     finish();
                 }
             }
